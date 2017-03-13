@@ -1,0 +1,11 @@
+<component name="libraryTable">
+  <library name="udp">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/libs/udp.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="jar://$PROJECT_DIR$/../libraries/udp.zip!/src" />
+    </SOURCES>
+  </library>
+</component>
