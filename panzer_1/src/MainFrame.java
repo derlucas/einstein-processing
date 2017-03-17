@@ -52,7 +52,7 @@ public class MainFrame extends PApplet {
             for (int j = 0; j < CHANNELS; j++) {
                 outputValues[i][j] = 0;
             }
-            output[i] = true;
+            output[i] = false;
             cp5.addToggle("output" + i).setPosition(300 + i * 40, 70).setSize(30, 15).setId(i).setValue(output[i]).setLabel("Pa " + (i + 1));
         }
 
@@ -87,7 +87,6 @@ public class MainFrame extends PApplet {
         fill(255);
         text("amp:  " + ampValue, 500, 10);
         text("freq: " + freqValue, 650, 10);
-//        text("min: " + minVal, 350, 10);
 
         stroke(impulse ? 255 : 0);
         fill(impulse ? 255 : 0);
@@ -95,11 +94,12 @@ public class MainFrame extends PApplet {
 
         renderEffect();
         calculateJitters();
-
         transformSetToOutput();
 
         drawOutput();
         sendPanzer();
+        fill(outputValues[0][0], 0, 0);
+        rect(20, 200, 200,200);
     }
 
     private void transformSetToOutput() {
@@ -218,16 +218,17 @@ public class MainFrame extends PApplet {
     public void sendPanzer() {
         for (int i = 0; i < PANZER; i++) {
             if (output[i]) {
-                byte[] channels = new byte[5];
+                byte[] buffer = new byte[CHANNELS];
                 for (int j = 0; j < CHANNELS; j++) {
                     if (blackout) {
-                        channels[j] = 0;
+                        buffer[j] = 0;
                     }
                     else {
-                        channels[j] = (byte) (outputValues[i][j]);
+                        buffer[j] = (byte) (outputValues[i][j]);
                     }
+                    //buffer[j+1] = getCheckSum(buffer, CHANNELS);
                 }
-                udp.send(channels, addresses[i], 4210);
+                udp.send(buffer, addresses[i], 4210);
             }
         }
     }
@@ -241,6 +242,9 @@ public class MainFrame extends PApplet {
         } else if(msg.checkAddrPattern("/impulse") ) {
             impulse = !impulse;
             chaserStep++;
+            chaserStep %= PANZER;
+        } else if(msg.checkAddrPattern("/zahl")) {
+            chaserStep=msg.get(0).intValue() - 1;
             chaserStep %= PANZER;
         }
 
@@ -284,6 +288,18 @@ public class MainFrame extends PApplet {
             }
         }
     }
+
+//    private byte getCheckSum(byte[] data, int len) {
+//        int tmp;
+//        int res = 0;
+//        for(int i = 0; i < len; i++) {
+//            tmp = res << 1;
+//            tmp += 0xff & data[i];
+//            res = ((tmp & 0xff) + (tmp >> 8)) & 0xff;
+//        }
+//        return (byte)res;
+//    }
+
 
     public static void main(String args[]) {
         PApplet.main("MainFrame");
