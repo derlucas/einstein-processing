@@ -1,6 +1,8 @@
 import controlP5.ControlEvent;
 import controlP5.ControlP5;
+import controlP5.DropdownList;
 import hypermedia.net.UDP;
+import oscP5.OscMessage;
 import oscP5.OscP5;
 import processing.core.PApplet;
 
@@ -23,6 +25,7 @@ public class MainFrame extends PApplet {
     private float maxVal = 0.0f;
     private boolean impulse = false;
     private boolean output[] = new boolean[PANZER];
+    private DropdownList ddEffect;
     private int selectedEffect;
     private int chaserStep = 0;
     private boolean blackout = false;
@@ -98,20 +101,6 @@ public class MainFrame extends PApplet {
         drawOutput();
         sendPanzer();
     }
-
-    private void rgb(int panzer, int rgbcolor) {
-
-        int r = rgbcolor >> 16 & 0xff;
-        int g = rgbcolor >> 8 & 0xff;
-        int b = rgbcolor >> 0 & 0xff;
-
-        setValues[panzer][0] = r;
-        setValues[panzer][1] = g;
-        setValues[panzer][2] = b;
-        setValues[panzer][3] = 0;
-        setValues[panzer][4] = 0;
-    }
-
 
     private void transformSetToOutput() {
         if (fade == 0) {
@@ -239,25 +228,57 @@ public class MainFrame extends PApplet {
     public void sendPanzer() {
         for (int i = 0; i < PANZER; i++) {
             if (output[i]) {
-                byte[] channels = new byte[5];
+                byte[] buffer = new byte[CHANNELS];
                 for (int j = 0; j < CHANNELS; j++) {
                     if (blackout) {
-                        channels[j] = 0;
-                    } else {
-                        channels[j] = (byte) (outputValues[i][j]);
+                        buffer[j] = 0;
                     }
+                    else {
+                        buffer[j] = (byte) (outputValues[i][j]);
+                    }
+                    //buffer[j+1] = getCheckSum(buffer, CHANNELS);
                 }
-                udp.send(channels, addresses[i], 4210);
+                udp.send(buffer, addresses[i], 4210);
             }
         }
     }
 
-//    void oscEvent(OscMessage msg) {
-//        if(msg.checkAddrPattern("/amp") && msg.checkTypetag("f")) {
-//            ampValue = msg.get(0).floatValue();
-//        } else if(msg.checkAddrPattern("/freq") && msg.checkTypetag("f")) {
-//            freqValue = msg.get(0).floatValue();
-//        } else if(msg.checkAddrPattern("/impulse") ) {
+    void oscEvent(OscMessage msg) {
+
+        if(msg.checkAddrPattern("/amp") && msg.checkTypetag("f")) {
+            ampValue = msg.get(0).floatValue();
+        } else if(msg.checkAddrPattern("/freq") && msg.checkTypetag("f")) {
+            freqValue = msg.get(0).floatValue();
+        } else if(msg.checkAddrPattern("/impulse") ) {
+            impulse = !impulse;
+            chaserStep++;
+            chaserStep %= PANZER;
+        } else if(msg.checkAddrPattern("/zahl")) {
+            chaserStep=msg.get(0).intValue() - 1;
+            chaserStep %= PANZER;
+        }
+
+    }
+
+//    public void receive(byte[] data) {
+//        data = subset(data, 0, data.length);
+//        String message = new String(data);
+//
+//        if (message.startsWith("/freq")) {
+//            String temp = message.split(" ")[1];
+//            temp = temp.trim();
+//            temp = temp.replaceAll(",", "");
+//            freqValue = Float.parseFloat(temp);
+//        }
+//
+//        if (message.startsWith("/amp")) {
+//            String temp = message.split(" ")[1];
+//            temp = temp.trim();
+//            temp = temp.replaceAll(",", "");
+//            ampValue = Float.parseFloat(temp);
+//        }
+//
+//        if (message.startsWith("/impulse")) {
 //            impulse = !impulse;
 //            chaserStep++;
 //            chaserStep %= PANZER;
@@ -301,6 +322,18 @@ public class MainFrame extends PApplet {
             }
         }
     }
+
+//    private byte getCheckSum(byte[] data, int len) {
+//        int tmp;
+//        int res = 0;
+//        for(int i = 0; i < len; i++) {
+//            tmp = res << 1;
+//            tmp += 0xff & data[i];
+//            res = ((tmp & 0xff) + (tmp >> 8)) & 0xff;
+//        }
+//        return (byte)res;
+//    }
+
 
     public static void main(String args[]) {
         PApplet.main("MainFrame");
