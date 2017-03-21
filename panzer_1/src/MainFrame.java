@@ -1,6 +1,5 @@
 import controlP5.ControlEvent;
 import controlP5.ControlP5;
-import controlP5.DropdownList;
 import hypermedia.net.UDP;
 import oscP5.OscMessage;
 import oscP5.OscP5;
@@ -25,7 +24,6 @@ public class MainFrame extends PApplet {
     private float maxVal = 0.0f;
     private boolean impulse = false;
     private boolean output[] = new boolean[PANZER];
-    private DropdownList ddEffect;
     private int selectedEffect;
     private int chaserStep = 0;
     private boolean blackout = false;
