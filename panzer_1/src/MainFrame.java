@@ -7,30 +7,32 @@ import processing.core.PApplet;
 
 public class MainFrame extends PApplet {
 
-    private String addresses[] = {"192.168.79.101", "192.168.79.102", "192.168.79.103", "192.168.79.104",
-            "192.168.79.105", "192.168.79.106", "192.168.79.107", "192.168.79.108",
-            "192.168.79.109", "192.168.79.110", "192.168.79.111", "192.168.79.112"};
+    private String addresses[] = {"192.168.80.101", "192.168.80.102", "192.168.80.103", "192.168.80.104",
+            "192.168.80.105", "192.168.80.106", "192.168.80.107", "192.168.80.108",
+            "192.168.80.109", "192.168.80.110", "192.168.80.111", "192.168.80.112"};
 
-    private int PANZER = 12;
+    private int COUNT = 12;
     private int CHANNELS = 5;
     private UDP udp;
-    private int outputValues[][] = new int[PANZER][CHANNELS];
-    private int setValues[][] = new int[PANZER][CHANNELS];
+    private int outputValues[][] = new int[COUNT][CHANNELS];
+    private int setValues[][] = new int[COUNT][CHANNELS];
     private ControlP5 cp5;
-    private float ampFactor = 0.5f;
-    private float ampValue = 0.3f;
+    private float ampFactor = 1.0f;
+    private float amp[] = new float[12];
     private float freqValue = 0.0f;
     private float minVal = 0.0f;
     private float maxVal = 0.0f;
     private boolean impulse = false;
-    private boolean output[] = new boolean[PANZER];
+    private boolean output[] = new boolean[COUNT];
     private int selectedEffect;
     private int chaserStep = 0;
     private boolean blackout = false;
     private OscP5 oscP5;
+    private int note;
+
 
     private float jitter = 0.0f;
-    private float jitters[][] = new float[PANZER][CHANNELS];
+    private float jitters[][] = new float[COUNT][CHANNELS];
     private long jittertimer;
     private int jitterdelay;
     private int fade = 0;
@@ -41,12 +43,12 @@ public class MainFrame extends PApplet {
     }
 
     public void setup() {
-        udp = new UDP(this, 2001);
+        udp = new UDP(this, 2101);
         udp.listen(true);
-//        oscP5 = new OscP5(this,2001);
+        oscP5 = new OscP5(this,2001);
         cp5 = new ControlP5(this);
 
-        for (int i = 0; i < PANZER; i++) {
+        for (int i = 0; i < COUNT; i++) {
             for (int j = 0; j < CHANNELS; j++) {
                 outputValues[i][j] = 0;
             }
@@ -56,7 +58,7 @@ public class MainFrame extends PApplet {
 
         cp5.addToggle("blackout").setPosition(250, 70).setSize(30, 15).setId(12).setValue(true).setLabel("BO");
 
-        cp5.addSlider("ampFactor").setPosition(10, 10).setSize(100, 20).setRange(0, 5.0f);
+        cp5.addSlider("ampFactor").setPosition(10, 10).setSize(100, 20).setRange(0, 100.0f);
         cp5.addSlider("jitter").setPosition(10, 35).setSize(100, 20).setRange(0, 1.0f);
         cp5.addSlider("jitterdelay").setPosition(10, 60).setSize(100, 20).setRange(10, 1000);
         cp5.addSlider("minVal").setPosition(10, 85).setSize(100, 20).setRange(0, 1.0f).setValue(0.0f);
@@ -76,16 +78,17 @@ public class MainFrame extends PApplet {
     public void impulse() {
         this.impulse = !this.impulse;
         this.chaserStep++;
-        this.chaserStep %= PANZER;
+        this.chaserStep %= COUNT;
     }
 
     public void draw() {
         background(0);
 
         fill(255);
-        text("amp:  " + ampValue, 500, 10);
+
         text("freq: " + freqValue, 650, 10);
-//        text("min: " + minVal, 350, 10);
+
+        drawInputAmps();
 
         stroke(impulse ? 255 : 0);
         fill(impulse ? 255 : 0);
@@ -100,9 +103,22 @@ public class MainFrame extends PApplet {
         sendPanzer();
     }
 
+    private void drawInputAmps() {
+        pushMatrix();
+        translate(300, 20);
+        for (int i = 0; i < COUNT; i++) {
+            fill(255);
+            text(String.format("%.2f", amp[i]), i * 40, 10);
+            stroke(50);
+            fill(amp[i] * 255);
+            rect(i * 40, 12, 30, 30);
+        }
+        popMatrix();
+    }
+
     private void transformSetToOutput() {
         if (fade == 0) {
-            for (int i = 0; i < PANZER; i++) {
+            for (int i = 0; i < COUNT; i++) {
                 for (int j = 0; j < CHANNELS; j++) {
                     outputValues[i][j] = setValues[i][j];
 
@@ -115,7 +131,7 @@ public class MainFrame extends PApplet {
             }
         } else if (millis() - fadetimer > 10) {
 
-            for (int i = 0; i < PANZER; i++) {
+            for (int i = 0; i < COUNT; i++) {
                 for (int j = 0; j < CHANNELS; j++) {
 
                     if (setValues[i][j] != outputValues[i][j]) {
@@ -146,17 +162,18 @@ public class MainFrame extends PApplet {
 
     private void drawOutput() {
         pushMatrix();
-        translate(300, 30);
+        translate(300, 150);
 
-        for (int i = 0; i < PANZER; i++) {
+        for (int i = 0; i < COUNT; i++) {
             for (int j = 0; j < CHANNELS; j++) {
                 fill(outputValues[i][j]);
                 stroke(outputValues[i][j]);
-                rect(i * 40 + j * 6, 0, 6, 32);
+                rect(i * 40 + j * 6, 0, 6, 30);
 
             }
-//            fill(255);
-//            text(outputValues[i][0], i * 40, 32);
+            stroke(50);
+            noFill();
+            rect(i* 40, 0, 30, 30);
         }
 
         popMatrix();
@@ -164,7 +181,7 @@ public class MainFrame extends PApplet {
 
     private void calculateJitters() {
         if (millis() - jittertimer > jitterdelay) {
-            for (int i = 0; i < PANZER; i++) {
+            for (int i = 0; i < COUNT; i++) {
                 for (int j = 0; j < CHANNELS; j++) {
                     jitters[i][j] = random(-jitter, jitter);
                 }
@@ -176,11 +193,9 @@ public class MainFrame extends PApplet {
     private void renderEffect() {
 
         if (selectedEffect == 0) {   // AMP
-            float val = ampValue * ampFactor;
-
-            for (int i = 0; i < PANZER; i++) {
+            for (int i = 0; i < COUNT; i++) {
                 for (int j = 0; j < CHANNELS; j++) {
-                    setValues[i][j] = min((int) (maxVal * 255), (int) (255 * (minVal + val + (val * jitters[i][j]))));
+                    setValues[i][j] = min((int) (maxVal * 255), (int) (255 * (minVal + amp[i] + (amp[i] * jitters[i][j]))));
                     if (setValues[i][j] > 255) {
                         setValues[i][j] = 255;
                     }
@@ -190,12 +205,12 @@ public class MainFrame extends PApplet {
                 }
             }
         } else if (selectedEffect == 1) {
-            for (int i = 0; i < PANZER; i++) {
+            for (int i = 0; i < COUNT; i++) {
                 int val = i == chaserStep ? (int) (maxVal * 255) : (int) (minVal * 255);
 
                 for (int j = 0; j < CHANNELS; j++) {
 
-                    setValues[i][j] = (int) (val + val * jitters[i][j] * ampValue);
+                    setValues[i][j] = (int) (val + val * jitters[i][j] * amp[i]);
 
                     if (setValues[i][j] > 255) {
                         setValues[i][j] = 255;
@@ -224,7 +239,7 @@ public class MainFrame extends PApplet {
     }
 
     public void sendPanzer() {
-        for (int i = 0; i < PANZER; i++) {
+        for (int i = 0; i < COUNT; i++) {
             if (output[i]) {
                 byte[] buffer = new byte[CHANNELS];
                 for (int j = 0; j < CHANNELS; j++) {
@@ -234,7 +249,6 @@ public class MainFrame extends PApplet {
                     else {
                         buffer[j] = (byte) (outputValues[i][j]);
                     }
-                    //buffer[j+1] = getCheckSum(buffer, CHANNELS);
                 }
                 udp.send(buffer, addresses[i], 4210);
             }
@@ -243,69 +257,29 @@ public class MainFrame extends PApplet {
 
     void oscEvent(OscMessage msg) {
 
-        if(msg.checkAddrPattern("/amp") && msg.checkTypetag("f")) {
-            ampValue = msg.get(0).floatValue();
-        } else if(msg.checkAddrPattern("/freq") && msg.checkTypetag("f")) {
+        if(msg.checkAddrPattern("/freq") && msg.checkTypetag("f")) {
             freqValue = msg.get(0).floatValue();
         } else if(msg.checkAddrPattern("/impulse") ) {
             impulse = !impulse;
             chaserStep++;
-            chaserStep %= PANZER;
+            chaserStep %= COUNT;
         } else if(msg.checkAddrPattern("/zahl")) {
             chaserStep=msg.get(0).intValue() - 1;
-            chaserStep %= PANZER;
+            chaserStep %= COUNT;
         }
 
-    }
+        String addr = msg.addrPattern();
 
-//    public void receive(byte[] data) {
-//        data = subset(data, 0, data.length);
-//        String message = new String(data);
-//
-//        if (message.startsWith("/freq")) {
-//            String temp = message.split(" ")[1];
-//            temp = temp.trim();
-//            temp = temp.replaceAll(",", "");
-//            freqValue = Float.parseFloat(temp);
-//        }
-//
-//        if (message.startsWith("/amp")) {
-//            String temp = message.split(" ")[1];
-//            temp = temp.trim();
-//            temp = temp.replaceAll(",", "");
-//            ampValue = Float.parseFloat(temp);
-//        }
-//
-//        if (message.startsWith("/impulse")) {
-//            impulse = !impulse;
-//            chaserStep++;
-//            chaserStep %= PANZER;
-//        }
-//    }
-
-    public void receive(byte[] data) {
-        data = subset(data, 0, data.length);
-        String message = new String(data);
-
-        if (message.startsWith("/freq")) {
-            String temp = message.split(" ")[1];
-            temp = temp.trim();
-            temp = temp.replaceAll(",", "");
-            freqValue = Float.parseFloat(temp);
+        if (addr.startsWith("amp")) {
+            int channel = Integer.parseInt(addr.substring(3));
+            amp[channel - 1] = msg.get(0).floatValue();
+            amp[channel - 1] = amp[channel - 1] * ampFactor;
         }
 
-        if (message.startsWith("/amp")) {
-            String temp = message.split(" ")[1];
-            temp = temp.trim();
-            temp = temp.replaceAll(",", "");
-            ampValue = Float.parseFloat(temp);
+        if (msg.checkAddrPattern("/keyNote")) {
+            note = msg.get(0).intValue();
         }
 
-        if (message.startsWith("/impulse")) {
-            impulse = !impulse;
-            chaserStep++;
-            chaserStep %= PANZER;
-        }
     }
 
     public void controlEvent(ControlEvent theEvent) {
@@ -320,17 +294,6 @@ public class MainFrame extends PApplet {
             }
         }
     }
-
-//    private byte getCheckSum(byte[] data, int len) {
-//        int tmp;
-//        int res = 0;
-//        for(int i = 0; i < len; i++) {
-//            tmp = res << 1;
-//            tmp += 0xff & data[i];
-//            res = ((tmp & 0xff) + (tmp >> 8)) & 0xff;
-//        }
-//        return (byte)res;
-//    }
 
 
     public static void main(String args[]) {

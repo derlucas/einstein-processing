@@ -10,5 +10,6 @@
     <orderEntry type="library" name="core" level="project" />
     <orderEntry type="library" name="controlP5" level="project" />
     <orderEntry type="library" name="udp" level="project" />
+    <orderEntry type="library" name="udp" level="project" />
   </component>
 </module>

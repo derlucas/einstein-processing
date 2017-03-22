@@ -13,7 +13,7 @@ public class Strips extends PApplet {
         "192.168.80.125", "192.168.80.126", "192.168.80.127", "192.168.80.128",
         "192.168.80.129", "192.168.80.130", "192.168.80.131", "192.168.80.132"};
 
-    private int SENDDELAY = 100;
+    private int SENDDELAY = 40;
     private int COUNT = 12;
     private int SEGMENTS = 13;
     private float ampFactor = 10.0f;
@@ -39,30 +39,31 @@ public class Strips extends PApplet {
     }
 
     public void setup() {
-        udp = new UDP(this, 2102);
-        oscP5 = new OscP5(this, 2002);
         frameRate(30);
 
+        udp = new UDP(this, 2102);
+        oscP5 = new OscP5(this, 2002);
         cp5 = new ControlP5(this);
+
         for (int i = 0; i < COUNT; i++) {
+            costumes[i] = new Costume(this, i * 65, 0, addresses[i]);
             output[i] = false;
+
             cp5.addToggle("output" + i).setPosition(300 + i * 40, 70).setSize(30, 15).setId(i).setValue(output[i]).setLabel("Pa " + (i + 1));
 
             for (int j = 0; j < 170; j++) {
                 outputColors[i][j] = 0;
             }
-            costumes[i] = new Costume(this, i * 65, 0, addresses[i]);
         }
-        cp5.addToggle("blackout").setPosition(250, 70).setSize(30, 15).setId(12).setValue(true).setLabel("BO");
 
+        cp5.addToggle("blackout").setPosition(250, 70).setSize(30, 15).setId(12).setValue(true).setLabel("BO");
         cp5.addSlider("overallbrightness").setPosition(10, 10).setSize(100, 20).setRange(0, 1.0f).setValue(0.5f);
-        cp5.addSlider("ampFactor").setPosition(10, 35).setSize(100, 20).setRange(0, 50.0f);
+        cp5.addSlider("ampFactor").setPosition(10, 35).setSize(100, 20).setRange(0, 100.0f);
         cp5.addSlider("redval").setPosition(10, 60).setSize(100, 20).setRange(0, 1.0f);
         cp5.addSlider("greenval").setPosition(10, 85).setSize(100, 20).setRange(0, 1.0f);
         cp5.addSlider("blueval").setPosition(10, 110).setSize(100, 20).setRange(0, 1.0f);
 
         cp5.addBang("bang").setPosition(250, 120).setSize(20, 20).plugTo(this, "impulse");
-
         cp5.addScrollableList("effectList").setPosition(300, 120)
            .setBarHeight(20).setItemHeight(20).setLabel("effect").close()
            .addItem("amp", 0).addItem("miladola", 1).addItem("RGBDEMO", 2).addItem("STEPS", 3).addItem("IRONMAN", 4);
@@ -80,6 +81,8 @@ public class Strips extends PApplet {
         if(System.currentTimeMillis() - lastSendData < SENDDELAY) {
             return;
         }
+
+        lastSendData = System.currentTimeMillis();
 
         for(Costume costume: costumes) {
             costume.send(udp, blackout ? 0.0f : overallbrightness);
@@ -124,7 +127,7 @@ public class Strips extends PApplet {
 
             if (keyPressed) {
                 for (int i = 0; i < SEGMENTS; i++) {
-                    costumes[i].setSegmentColor(i, 0);
+                    costumes[0].setSegmentColor(i, 0);
                 }
 
                 if (key == 'l') {
@@ -176,14 +179,13 @@ public class Strips extends PApplet {
             text(String.format("%.2f", amp[i]), i * 40, 10);
             stroke(50);
             fill(amp[i] * 255);
-            rect(i * 40, 12, 32, 32);
+            rect(i * 40, 12, 30, 30);
         }
         popMatrix();
     }
 
     void oscEvent(OscMessage msg) {
 
-//        System.out.println(msg.addrPattern());
         String addr = msg.addrPattern();
 
         if (addr.startsWith("amp")) {
@@ -201,8 +203,9 @@ public class Strips extends PApplet {
         if (theEvent.isController()) {
             if (theEvent.getName().startsWith("output")) {
                 int id = theEvent.getId();
-                if (id >= 0 && id < output.length) {
+                if (id >= 0 && id < COUNT) {
                     output[id] = theEvent.getValue() > 0;
+                    costumes[id].setEnabled(output[id]);
                 }
             }
             else if (theEvent.getName().startsWith("effectList")) {

@@ -21,8 +21,6 @@ public class Costume {
         base.fill(0);
         base.stroke(20);
         base.rect(x, y, 60, 80);
-
-
     }
 
     public void setSegmentColor(int segment, int color) {
