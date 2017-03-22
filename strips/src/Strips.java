@@ -32,6 +32,7 @@ public class Strips extends PApplet {
     private int selectedEffect;
     private int step;
     private long lastSendData;
+    private Costume costumes[] = new Costume[COUNT];
 
     public void settings() {
         size(800, 600);
@@ -50,6 +51,7 @@ public class Strips extends PApplet {
             for (int j = 0; j < 170; j++) {
                 outputColors[i][j] = 0;
             }
+            costumes[i] = new Costume(this, i * 65, 0, addresses[i]);
         }
         cp5.addToggle("blackout").setPosition(250, 70).setSize(30, 15).setId(12).setValue(true).setLabel("BO");
 
@@ -79,25 +81,8 @@ public class Strips extends PApplet {
             return;
         }
 
-        lastSendData = System.currentTimeMillis();
-
-        for (int i = 0; i < COUNT; i++) {
-            if (output[i]) {
-                byte[] buffer = new byte[170 * 3];
-                for (int j = 0; j < 170; j++) {
-                    if (blackout) {
-                        buffer[(j * 3)] = (byte) (0);
-                        buffer[(j * 3) + 1] = (byte) (0);
-                        buffer[(j * 3) + 2] = (byte) (0);
-                    }
-                    else {
-                        buffer[(j * 3)] = (byte) (red(outputColors[i][j]) * overallbrightness);
-                        buffer[(j * 3) + 1] = (byte) (green(outputColors[i][j]) * overallbrightness);
-                        buffer[(j * 3) + 2] = (byte) (blue(outputColors[i][j]) * overallbrightness);
-                    }
-                }
-                udp.send(buffer, addresses[i], 4210);
-            }
+        for(Costume costume: costumes) {
+            costume.send(udp, blackout ? 0.0f : overallbrightness);
         }
     }
 
@@ -111,7 +96,19 @@ public class Strips extends PApplet {
 
         renderEffect();
 
+        drawCostumes();
         sendOutputs();
+    }
+
+    private void drawCostumes() {
+        pushMatrix();
+        translate(10, 400);
+
+        for(Costume costume: costumes) {
+            costume.display();
+        }
+
+        popMatrix();
     }
 
     private void renderEffect() {
@@ -119,7 +116,7 @@ public class Strips extends PApplet {
         if (selectedEffect == 0) {  //amp
             for (int costume = 0; costume < COUNT; costume++) {
                 for (int seg = 0; seg < SEGMENTS; seg++) {
-                    setSegmentColor(costume, seg, color(255*amp[0]));
+                    costumes[costume].setSegmentColor(seg, color(255*amp[0]));
                 }
             }
         }
@@ -127,27 +124,27 @@ public class Strips extends PApplet {
 
             if (keyPressed) {
                 for (int i = 0; i < SEGMENTS; i++) {
-                    setSegmentColor(0, i, 0);
+                    costumes[i].setSegmentColor(i, 0);
                 }
 
                 if (key == 'l') {
-                    setSegmentColor(0, 0, color(20,0,255));
-                    setSegmentColor(0, 1, color(20,0,255));
+                    costumes[0].setSegmentColor(0, color(20,0,255));
+                    costumes[0].setSegmentColor(1, color(20,0,255));
                 }
                 else if (key == 'm') {
-                    setSegmentColor(0, 2, color(255,240,0));
+                    costumes[0].setSegmentColor(2, color(255,240,0));
                 }
                 else if (key == 'd') {
-                    setSegmentColor(0, 6, color(255,0,1));
-                    setSegmentColor(0, 7, color(255,0,1));
+                    costumes[0].setSegmentColor(6, color(255,0,1));
+                    costumes[0].setSegmentColor(7, color(255,0,1));
                 }
             }
         }
         else if (selectedEffect == 2) { // RGB demo fade
 
-            for (int i = 0; i < COUNT; i++) {
+            for (int costume = 0; costume < COUNT; costume++) {
                 for (int seg = 0; seg < SEGMENTS; seg++) {
-                    setSegmentColor(i, seg, color(255*redval, 255*greenval, 255*blueval));
+                    costumes[costume].setSegmentColor(seg, color(255*redval, 255*greenval, 255*blueval));
                 }
             }
 
@@ -155,82 +152,19 @@ public class Strips extends PApplet {
         else if(selectedEffect == 3) {
             for (int costume = 0; costume < COUNT; costume++) {
                 for (int seg = 0; seg < SEGMENTS; seg++) {
-                    setSegmentColor(costume, seg, step == seg ? color(255) : 0);
+                    costumes[costume].setSegmentColor(seg, step == seg ? color(255) : 0);
                 }
             }
         } else if (selectedEffect == 4) {
             for (int costume = 0; costume < COUNT; costume++) {
                 for (int seg = 0; seg < SEGMENTS; seg++) {
-                    setSegmentColor(costume, seg, 0);
+                    costumes[costume].setSegmentColor(seg, 0);
                 }
-                setSegmentColor(costume, 3,  color(255 * amp[costume], 0, 0));
-                setSegmentColor(costume, 4,  color(255 * amp[costume], 0, 0));
-                setSegmentColor(costume, 5,  color(255 * amp[costume], 0, 0));
-                setSegmentColor(costume, 12, color(255 * amp[costume], 0, 0));
+                costumes[costume].setSegmentColor(3,  color(255 * amp[costume], 0, 0));
+                costumes[costume].setSegmentColor(4,  color(255 * amp[costume], 0, 0));
+                costumes[costume].setSegmentColor(5,  color(255 * amp[costume], 0, 0));
+                costumes[costume].setSegmentColor(12, color(255 * amp[costume], 0, 0));
             }
-        }
-    }
-
-    private void setSegmentColor(int channel, int segment, int color) {
-
-        int from = 0, to = 0;
-
-        switch (segment) {
-            case 0:
-                from = 35;
-                to = 64;
-                break;
-            case 1:
-                from = 100;
-                to = 129;
-                break;
-            case 2:
-                from = 130;
-                to = 149;
-                break;
-            case 3:
-                from = 156;
-                to = 163;
-                break;
-            case 4:
-                from = 76;
-                to = 81;
-                break;
-            case 5:
-                from = 11;
-                to = 16;
-                break;
-            case 6:
-                from = 18;
-                to = 34;
-                break;
-            case 7:
-                from = 83;
-                to = 99;
-                break;
-            case 8:
-                from = 150;
-                to = 155;
-                break;
-            case 9:
-                from = 164;
-                to = 169;
-                break;
-            case 10:
-                from = 65;
-                to = 74;
-                break;
-            case 11:
-                from = 0;
-                to = 9;
-                break;
-            case 12:
-                from = 82;
-                to = 82;
-                break;
-        }
-        for (int i = from; i <= to; i++) {
-            outputColors[channel][i] = color;
         }
     }
 
