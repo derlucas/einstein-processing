@@ -9,10 +9,11 @@ import java.awt.*;
 
 public class Strips extends PApplet {
 
-    private String addresses[] = {"192.168.79.121", "192.168.79.122", "192.168.79.123", "192.168.79.124",
-        "192.168.79.125", "192.168.79.126", "192.168.79.127", "192.168.79.128",
-        "192.168.79.129", "192.168.79.130", "192.168.79.131", "192.168.79.132"};
+    private String addresses[] = {"192.168.80.121", "192.168.80.122", "192.168.80.123", "192.168.80.124",
+        "192.168.80.125", "192.168.80.126", "192.168.80.127", "192.168.80.128",
+        "192.168.80.129", "192.168.80.130", "192.168.80.131", "192.168.80.132"};
 
+    private int SENDDELAY = 100;
     private int COUNT = 12;
     private int SEGMENTS = 13;
     private float ampFactor = 10.0f;
@@ -30,6 +31,7 @@ public class Strips extends PApplet {
     private int outputColors[][] = new int[COUNT][170];
     private int selectedEffect;
     private int step;
+    private long lastSendData;
 
     public void settings() {
         size(800, 600);
@@ -72,6 +74,12 @@ public class Strips extends PApplet {
     }
 
     public void sendOutputs() {
+
+        if(System.currentTimeMillis() - lastSendData < SENDDELAY) {
+            return;
+        }
+
+        lastSendData = System.currentTimeMillis();
 
         for (int i = 0; i < COUNT; i++) {
             if (output[i]) {
