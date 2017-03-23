@@ -99,17 +99,21 @@ public class Costume {
             return;
         }
 
-        byte[] buffer = new byte[170 * 3];
+        byte[] buffer = new byte[170 * 3 + 3];  // 3 control bytes at the beginning
+        buffer[0] = 0;  // 1 for gamma = on
+        buffer[1] = 0;
+        buffer[2] = 0;
+
         for (int j = 0; j < 170; j++) {
             if (brightness < 0.01) {
-                buffer[(j * 3)] = (byte) (0);
-                buffer[(j * 3) + 1] = (byte) (0);
-                buffer[(j * 3) + 2] = (byte) (0);
+                buffer[3 + (j * 3)] = (byte) (0);
+                buffer[3 + (j * 3) + 1] = (byte) (0);
+                buffer[3 + (j * 3) + 2] = (byte) (0);
             }
             else {
-                buffer[(j * 3)] = (byte) (base.red(outputColors[j]) * brightness);
-                buffer[(j * 3) + 1] = (byte) (base.green(outputColors[j]) * brightness);
-                buffer[(j * 3) + 2] = (byte) (base.blue(outputColors[j]) * brightness);
+                buffer[3 + (j * 3)] = (byte) (base.red(outputColors[j]) * brightness);
+                buffer[3 + (j * 3) + 1] = (byte) (base.green(outputColors[j]) * brightness);
+                buffer[3 + (j * 3) + 2] = (byte) (base.blue(outputColors[j]) * brightness);
             }
         }
 

@@ -140,6 +140,18 @@ public class Strips extends PApplet {
                 else if (key == 'd') {
                     costumes[0].setSegmentColor(6, color(255,0,1));
                     costumes[0].setSegmentColor(7, color(255,0,1));
+                } else if (key == 'i') {
+                    for (int seg = 0; seg < SEGMENTS; seg++) {
+                        costumes[0].setSegmentColor(seg, color(255,0,0));
+                    }
+                } else if (key == 'o') {
+                    for (int seg = 0; seg < SEGMENTS; seg++) {
+                        costumes[0].setSegmentColor(seg, color(0,255,0));
+                    }
+                } else if (key == 'p') {
+                    for (int seg = 0; seg < SEGMENTS; seg++) {
+                        costumes[0].setSegmentColor(seg, color(0,0,255));
+                    }
                 }
             }
         }
