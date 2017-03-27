@@ -3,12 +3,13 @@ import processing.core.PApplet;
 
 public class Costume {
 
-    private final PApplet base;
-    private final String ipAddress;
-    private final int x;
-    private final int y;
-    private int outputColors[] = new int[170];
-    private boolean enableOutput = false;
+    int ledsCount = 170;
+    final PApplet base;
+    final String ipAddress;
+    final int x;
+    final int y;
+    int outputColors[] = new int[ledsCount];
+    boolean enableOutput = false;
 
     public Costume(PApplet base, int x, int y, String ipAddress) {
         this.base = base;
@@ -95,16 +96,16 @@ public class Costume {
     }
 
     public void send(UDP udp, float brightness) {
-        if(!enableOutput) {
+        if (!enableOutput) {
             return;
         }
 
-        byte[] buffer = new byte[170 * 3 + 3];  // 3 control bytes at the beginning
+        byte[] buffer = new byte[180 * 3 + 3];  // 3 control bytes at the beginning
         buffer[0] = 0;  // 1 for gamma = on
         buffer[1] = 0;
         buffer[2] = 0;
 
-        for (int j = 0; j < 170; j++) {
+        for (int j = 0; j < ledsCount; j++) {
             if (brightness < 0.01) {
                 buffer[3 + (j * 3)] = (byte) (0);
                 buffer[3 + (j * 3) + 1] = (byte) (0);

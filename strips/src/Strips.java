@@ -15,7 +15,7 @@ public class Strips extends PApplet {
 
     private int SENDDELAY = 40;
     private int COUNT = 12;
-    private int SEGMENTS = 13;
+    private int SEGMENTS = 18;
     private float ampFactor = 10.0f;
     float amp[] = new float[12];
     OscP5 oscP5;
@@ -54,6 +54,11 @@ public class Strips extends PApplet {
             for (int j = 0; j < 170; j++) {
                 outputColors[i][j] = 0;
             }
+        }
+
+        costumes[0] = new CostumeKatharina(this, 0, 0, addresses[0]);
+        for (int i = 1; i < COUNT; i++) {
+            costumes[i] = new Costume(this, i * 65, 0, addresses[i]);
         }
 
         cp5.addToggle("blackout").setPosition(250, 70).setSize(30, 15).setId(12).setValue(true).setLabel("BO");
@@ -131,15 +136,19 @@ public class Strips extends PApplet {
                 }
 
                 if (key == 'l') {
-                    costumes[0].setSegmentColor(0, color(20,0,255));
-                    costumes[0].setSegmentColor(1, color(20,0,255));
+                    costumes[0].setSegmentColor(0, color(10,0,255));
+                    costumes[0].setSegmentColor(1, color(10,0,255));
+                    costumes[0].setSegmentColor(16, color(10,0,255));
+                    costumes[0].setSegmentColor(17, color(10,0,255));
                 }
                 else if (key == 'm') {
                     costumes[0].setSegmentColor(2, color(255,240,0));
+                    costumes[0].setSegmentColor(12, color(255,240,0));
+                    costumes[0].setSegmentColor(13, color(255,240,0));
                 }
                 else if (key == 'd') {
-                    costumes[0].setSegmentColor(6, color(255,0,1));
-                    costumes[0].setSegmentColor(7, color(255,0,1));
+                    costumes[0].setSegmentColor(6, color(255,0,0));
+                    costumes[0].setSegmentColor(7, color(255,0,0));
                 } else if (key == 'i') {
                     for (int seg = 0; seg < SEGMENTS; seg++) {
                         costumes[0].setSegmentColor(seg, color(255,0,0));
@@ -178,7 +187,6 @@ public class Strips extends PApplet {
                 costumes[costume].setSegmentColor(3,  color(255 * amp[costume], 0, 0));
                 costumes[costume].setSegmentColor(4,  color(255 * amp[costume], 0, 0));
                 costumes[costume].setSegmentColor(5,  color(255 * amp[costume], 0, 0));
-                costumes[costume].setSegmentColor(12, color(255 * amp[costume], 0, 0));
             }
         }
     }
