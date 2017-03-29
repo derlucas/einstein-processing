@@ -1,9 +1,9 @@
 import hypermedia.net.UDP;
 import processing.core.PApplet;
 
-public class CostumeMiklasherich extends CostumeEberl {
+public class CostumeKruppa extends CostumeEberl {
 
-    CostumeMiklasherich(PApplet base, UDP udp, int x, int y, String ipAddress) {
+    CostumeKruppa(PApplet base, UDP udp, int x, int y, String ipAddress) {
         super(base, udp, x, y, ipAddress);
         setLedCount(174);
         segmentation = new int[][]{

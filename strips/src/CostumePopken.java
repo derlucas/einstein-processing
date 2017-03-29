@@ -1,9 +1,9 @@
 import hypermedia.net.UDP;
 import processing.core.PApplet;
 
-public class CostumeMiklasherich extends CostumeEberl {
+public class CostumePopken extends CostumeEberl {
 
-    CostumeMiklasherich(PApplet base, UDP udp, int x, int y, String ipAddress) {
+    CostumePopken(PApplet base, UDP udp, int x, int y, String ipAddress) {
         super(base, udp, x, y, ipAddress);
         setLedCount(174);
         segmentation = new int[][]{
@@ -13,6 +13,14 @@ public class CostumeMiklasherich extends CostumeEberl {
             {146, 152}, {128, 133}, {64, 68}, {0, 4},
             {59, 63}, {123, 127},
         };
+    }
+
+    @Override
+    void effect110cmLine(int color) {
+        effectSingleColor(0);
+        setSegmentColor(2, color);
+        setSegmentColor(12, color);
+        setSegmentColor(13, color);
     }
 
 }

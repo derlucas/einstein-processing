@@ -187,4 +187,13 @@ public class Costume {
             setSegmentColor(i, color);
         }
     }
+
+    void effect110cmLine(int color) {
+        effectSingleColor(0);
+        setSegmentColor(3, color);
+        setSegmentColor(8, color);
+        setSegmentColor(9, color);
+        setSegmentColor(10, color);
+        setSegmentColor(11, color);
+    }
 }
