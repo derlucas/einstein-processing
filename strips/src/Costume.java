@@ -3,6 +3,7 @@ import processing.core.PApplet;
 
 public class Costume {
 
+    private int SEGMENTS = 12;
     int ledsCount = 170;
     final PApplet base;
     final String ipAddress;
@@ -110,8 +111,7 @@ public class Costume {
                 buffer[3 + (j * 3)] = (byte) (0);
                 buffer[3 + (j * 3) + 1] = (byte) (0);
                 buffer[3 + (j * 3) + 2] = (byte) (0);
-            }
-            else {
+            } else {
                 buffer[3 + (j * 3)] = (byte) (base.red(outputColors[j]) * brightness);
                 buffer[3 + (j * 3) + 1] = (byte) (base.green(outputColors[j]) * brightness);
                 buffer[3 + (j * 3) + 2] = (byte) (base.blue(outputColors[j]) * brightness);
@@ -119,6 +119,39 @@ public class Costume {
         }
 
         udp.send(buffer, ipAddress, 4210);
+    }
+
+
+    public void effectMI() {
+        for (int i = 0; i < SEGMENTS; i++) {
+            setSegmentColor(i, 0);
+        }
+
+        // mi   unten linie
+        setSegmentColor(2, base.color(255, 240, 0));
+//        setSegmentColor(12, base.color(255, 240, 0));
+//        setSegmentColor(13, base.color(255, 240, 0));
+    }
+
+    public void effectLA() {
+        for (int i = 0; i < SEGMENTS; i++) {
+            setSegmentColor(i, 0);
+        }
+
+        // hosenträger
+        setSegmentColor(0, base.color(0, 0, 255));
+        setSegmentColor(1, base.color(0, 0, 255));
+    }
+
+    public void effectDO() {
+        for (int i = 0; i < SEGMENTS; i++) {
+            setSegmentColor(i, 0);
+        }
+
+        // V neck
+        setSegmentColor(6, base.color(255, 0, 0));
+        setSegmentColor(7, base.color(255, 0, 0));
+
     }
 
 }
