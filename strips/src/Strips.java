@@ -13,9 +13,10 @@ public class Strips extends PApplet {
             "192.168.80.125", "192.168.80.126", "192.168.80.127", "192.168.80.128",
             "192.168.80.129", "192.168.80.130", "192.168.80.131", "192.168.80.132"};
 
-    private int SENDDELAY = 40;
-    private int COUNT = 12;
-    private int SEGMENTS = 18;
+    private static int SENDDELAY = 40;
+    public static final int COUNT = 12;
+    public static final int SEGMENTS = 18;
+
     private float ampFactor = 10.0f;
     float amp[] = new float[12];
     OscP5 oscP5;
@@ -61,8 +62,6 @@ public class Strips extends PApplet {
             }
         }
 
-
-
         cp5.addToggle("blackout").setPosition(250, 70).setSize(30, 15).setId(12).setValue(true).setLabel("BO");
         cp5.addSlider("overallbrightness").setPosition(10, 10).setSize(100, 20).setRange(0, 1.0f).setValue(0.5f);
         cp5.addSlider("ampFactor").setPosition(10, 35).setSize(100, 20).setRange(0, 100.0f);
@@ -86,7 +85,33 @@ public class Strips extends PApplet {
         step %= SEGMENTS;
     }
 
-    public void sendOutputs() {
+    public void draw() {
+        background(0);
+
+        drawInputAmps();
+
+        fill(Color.HSBtoRGB(1.0f / 12 * note, 0.5f, 0.5f));
+        noStroke();
+        rect(200, 200, 50, 50);
+
+        renderEffect();
+
+        // render and draw costumes
+        pushMatrix();
+        translate(10, 400);
+
+        for (Costume costume : costumes) {
+            costume.render();
+            costume.display();
+        }
+
+        popMatrix();
+
+        // send data via UDP
+        sendOutputs();
+    }
+
+    private void sendOutputs() {
         if (System.currentTimeMillis() - lastSendData < SENDDELAY) {
             return;
         }
@@ -96,35 +121,6 @@ public class Strips extends PApplet {
         for (Costume costume : costumes) {
             costume.send();
         }
-    }
-
-    public void draw() {
-        background(0);
-
-        drawInputAmps();
-        fill(Color.HSBtoRGB(1.0f / 12 * note, 0.5f, 0.5f));
-        noStroke();
-        rect(200, 200, 50, 50);
-
-        renderEffect();
-
-        for(Costume costume: costumes) {
-            costume.render();
-        }
-
-        drawCostumes();
-        sendOutputs();
-    }
-
-    private void drawCostumes() {
-        pushMatrix();
-        translate(10, 400);
-
-        for (Costume costume : costumes) {
-            costume.display();
-        }
-
-        popMatrix();
     }
 
     private void renderEffect() {

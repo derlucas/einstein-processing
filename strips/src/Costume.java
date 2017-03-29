@@ -3,7 +3,14 @@ import processing.core.PApplet;
 
 public class Costume {
 
-    private int SEGMENTS = 12;
+    public int segmentation[][] = new int[][]{
+        {35, 64}, {100, 129}, {130, 149}, {156, 163},
+        {76, 81}, {11, 16}, {18, 34}, {83, 99},
+        {150, 155}, {164, 169}, {65, 74}, {0, 9},
+        {82, 82},
+        {169, 169}, {169, 169}, {169, 169}, {169, 169}, {169, 169}
+    };
+
     int ledsCount = 170;
     final PApplet base;
     final String ipAddress;
@@ -18,7 +25,7 @@ public class Costume {
     float release = 1.0f;
     private long fadetimer;
 
-    public Costume(PApplet base, UDP udp, int x, int y, String ipAddress) {
+    Costume(PApplet base, UDP udp, int x, int y, String ipAddress) {
         this.base = base;
         this.x = x;
         this.y = y;
@@ -44,25 +51,28 @@ public class Costume {
         }
     }
 
-    public void setLedColor(int led, int color) {
+    void setLedColor(int led, int color) {
         setRGB[led][0] = base.red(color) / 255.0f;
         setRGB[led][1] = base.green(color) / 255.0f;
-        setRGB[led][2] = base.blue(color)  / 255.0f;
+        setRGB[led][2] = base.blue(color) / 255.0f;
     }
 
-    public void display() {
+    void display() {
         base.fill(0);
         base.stroke(20);
         base.rect(x, y, 60, 80);
-        base.fill(base.color(255*outputRGB[0][0], 255* outputRGB[0][1],255* outputRGB[0][2]));
+        base.fill(base.color(255 * brightness * outputRGB[0][0], 255 * brightness * outputRGB[0][1], 255 * brightness * outputRGB[0][2]));
         base.rect(x + 5, y + 5, 50, 70);
     }
 
-    public void setSegmentColor(int segment, int color) {
+    void setSegmentColor(int segment, int color) {
+        if (segment < 0 || segment > Strips.SEGMENTS) {
+            return;
+        }
 
-        int from = 0, to = 0;
+        int from = segmentation[segment][0], to = segmentation[segment][1];
 
-        switch (segment) {
+/*        switch (segment) {
             case 0:
                 from = 35;
                 to = 64;
@@ -115,33 +125,33 @@ public class Costume {
                 from = 82;
                 to = 82;
                 break;
-        }
+        }    */
 
         for (int i = from; i <= to; i++) {
             setLedColor(i, color);
         }
     }
 
-    public void setEnabled(boolean enabled) {
+    void setEnabled(boolean enabled) {
         this.enableOutput = enabled;
     }
 
-    public void brightness(float brightness) {
+    void brightness(float brightness) {
         if (brightness > 1.0f || brightness < 0.0f) {
             return;
         }
         this.brightness = brightness;
     }
 
-    public void attack(float attack) {
+    void attack(float attack) {
         this.attack = attack;
     }
 
-    public void release(float release) {
+    void release(float release) {
         this.release = release;
     }
 
-    public void send() {
+    void send() {
         if (!enableOutput) {
             return;
         }
@@ -167,7 +177,7 @@ public class Costume {
         udp.send(buffer, ipAddress, 4210);
     }
 
-    public void render() {
+    void render() {
 
         if (attack >= 0.99f && release >= 0.99f) {
             // direct switching
@@ -178,10 +188,7 @@ public class Costume {
             }
         }
         else if (base.millis() - fadetimer > 10) {
-
-            //faderamp();
             fadedelta();
-
             fadetimer = base.millis();
         }
     }
@@ -210,78 +217,30 @@ public class Costume {
         }
     }
 
-    private void faderamp() {
-        for (int i = 0; i < ledsCount; i++) {
-            for (int color = 0; color < 3; color++) {
-
-                if (Math.abs(setRGB[i][color] - outputRGB[i][color]) > 0.01) {
-
-                    if (setRGB[i][color] > outputRGB[i][color]) {
-                        outputRGB[i][color] += attack;
-                        if (outputRGB[i][color] > 1.0f) {
-                            outputRGB[i][color] = 1.0f;
-                        }
-                    }
-                    else if (setRGB[i][color] < outputRGB[i][color]) {
-                        outputRGB[i][color] -= release;
-                        if (outputRGB[i][color] < 0.0f) {
-                            outputRGB[i][color] = 0.0f;
-                        }
-                    }
-
-                    float diff = outputRGB[i][color] - setRGB[i][color];
-                    if (diff < 0) {
-                        if (Math.abs(diff) < release) {
-                            outputRGB[i][color] -= diff;
-                        }
-                    }
-                    else {
-                        if (Math.abs(diff) < attack) {
-                            outputRGB[i][color] -= diff;
-                        }
-                    }
-
-                    if (outputRGB[i][color] > 1.0f) {
-                        outputRGB[i][color] = 1.0f;
-                    }
-                    else if (outputRGB[i][color] < 0) {
-                        outputRGB[i][color] = 0;
-                    }
-                }
-            }
-        }
-    }
-
-    public void effectMI() {
-        for (int i = 0; i < SEGMENTS; i++) {
-            setSegmentColor(i, 0);
-        }
+    void effectMI() {
+        effectSingleColor(0);
         // mi   unten linie
         setSegmentColor(2, base.color(255, 240, 0));
     }
 
-    public void effectLA() {
-        for (int i = 0; i < SEGMENTS; i++) {
-            setSegmentColor(i, 0);
-        }
+    void effectLA() {
+        effectSingleColor(0);
 
         // hosenträger
         setSegmentColor(0, base.color(0, 0, 255));
         setSegmentColor(1, base.color(0, 0, 255));
     }
 
-    public void effectDO() {
-        for (int i = 0; i < SEGMENTS; i++) {
-            setSegmentColor(i, 0);
-        }
+    void effectDO() {
+        effectSingleColor(0);
 
         // V neck
         setSegmentColor(6, base.color(255, 0, 0));
         setSegmentColor(7, base.color(255, 0, 0));
     }
 
-    public void effectSingleColor(int color) {
-        for (int i = 0; i < SEGMENTS; i++) {
+    void effectSingleColor(int color) {
+        for (int i = 0; i < Strips.SEGMENTS; i++) {
             setSegmentColor(i, color);
         }
     }
