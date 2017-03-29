@@ -12,7 +12,7 @@ public class MainFrame extends PApplet {
             "192.168.80.109", "192.168.80.110", "192.168.80.111", "192.168.80.112"};
 
     private int COUNT = 6;
-    private int SENDDELAY = 100;
+    private int SENDDELAY = 20;
     private float setValues[] = new float[COUNT];
     private float outputValues[] = new float[COUNT];
     private float outputValuesLast[] = new float[COUNT];
@@ -143,7 +143,7 @@ public class MainFrame extends PApplet {
 
         for (int i = 0; i < COUNT; i++) {
             if (abs(outputValues[i] - outputValuesLast[i]) > 0.01f) {
-                OscMessage myMessage = new OscMessage("/eos/sub/" + i + 1);
+                OscMessage myMessage = new OscMessage("/eos/sub/" + (i + 1));
                 myMessage.add(blackout ? 0.0f : outputValues[i]);
                 oscP5.send(myMessage, gio);
                 System.out.println("sende " + (i + 1) + " : " + (blackout ? 0.0f : outputValues[i]));

@@ -36,6 +36,7 @@ public class MainFrame extends PApplet {
     private long jittertimer;
     private int jitterdelay;
     private int fade = 0;
+    private int fade2 = 80;
     private long fadetimer;
 
     public void settings() {
@@ -64,6 +65,7 @@ public class MainFrame extends PApplet {
         cp5.addSlider("minVal").setPosition(10, 85).setSize(100, 20).setRange(0, 1.0f).setValue(0.0f);
         cp5.addSlider("maxVal").setPosition(10, 110).setSize(100, 20).setRange(0, 1.0f).setValue(1.0f);
         cp5.addSlider("fade").setPosition(10, 135).setSize(100, 20).setRange(0, 80).setValue(0);
+        cp5.addSlider("fade2").setPosition(10, 160).setSize(100, 20).setRange(0, 80).setValue(80);
 
         cp5.addBang("bang").setPosition(250, 120).setSize(20, 20).plugTo(this, "impulse");
 
@@ -138,13 +140,25 @@ public class MainFrame extends PApplet {
 
                         if (setValues[i][j] > outputValues[i][j]) {
                             outputValues[i][j] += fade;
+                            if (outputValues[i][j] > 255) {
+                                outputValues[i][j] = 255;
+                            }
                         } else if (setValues[i][j] < outputValues[i][j]) {
-                            outputValues[i][j] -= fade;
+                            outputValues[i][j] -= fade2;
+                            if (outputValues[i][j] < 0) {
+                                outputValues[i][j] = 0;
+                            }
                         }
 
                         int diff = outputValues[i][j] - setValues[i][j];
-                        if (abs(diff) < fade) {
-                            outputValues[i][j] -= diff;
+                        if(diff < 0) {
+                            if (abs(diff) < fade2) {
+                                outputValues[i][j] -= diff;
+                            }
+                        } else {
+                            if (abs(diff) < fade) {
+                                outputValues[i][j] -= diff;
+                            }
                         }
 
                         if (outputValues[i][j] > 255) {
