@@ -1,7 +1,7 @@
 import hypermedia.net.UDP;
 import processing.core.PApplet;
 
-public class CostumeMiklasherich extends Costume {
+public class CostumeMiklasherich extends CostumeKatharina {
 
     CostumeMiklasherich(PApplet base, UDP udp, int x, int y, String ipAddress) {
         super(base, udp, x, y, ipAddress);

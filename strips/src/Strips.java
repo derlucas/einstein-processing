@@ -14,8 +14,8 @@ public class Strips extends PApplet {
             "192.168.80.129", "192.168.80.130", "192.168.80.131", "192.168.80.132"};
 
     private static int SENDDELAY = 40;
-    public static final int COUNT = 12;
-    public static final int SEGMENTS = 18;
+    static final int COUNT = 12;
+    static final int SEGMENTS = 18;
 
     private float ampFactor = 10.0f;
     float amp[] = new float[12];
@@ -24,7 +24,6 @@ public class Strips extends PApplet {
     private int note;
     private int velocity;
     private UDP udp;
-    private boolean output[] = new boolean[COUNT];
     private boolean blackout = false;
     private float overallbrightness;
     private float redval;
@@ -55,8 +54,8 @@ public class Strips extends PApplet {
         }
 
         for (int i = 0; i < COUNT; i++) {
-            output[i] = false;
-            cp5.addToggle("output" + i).setPosition(300 + i * 40, 70).setSize(30, 15).setId(i).setValue(output[i]).setLabel("Pa " + (i + 1));
+            //output[i] = false;
+            cp5.addToggle("output" + i).setPosition(300 + i * 40, 70).setSize(30, 15).setId(i).setValue(false).setLabel("Pa " + (i + 1));
             for (int j = 0; j < 170; j++) {
                 outputColors[i][j] = 0;
             }
@@ -77,7 +76,7 @@ public class Strips extends PApplet {
                 .addItem("amp", 0).addItem("miladola", 1)
                 .addItem("RGBDEMO", 2).addItem("STEPS", 3);
 
-        surface.setTitle("Stripse");
+        surface.setTitle("STRIP CONTROLLER");
     }
 
     public void impulse() {
@@ -194,8 +193,8 @@ public class Strips extends PApplet {
             if (theEvent.getName().startsWith("output")) {
                 int id = theEvent.getId();
                 if (id >= 0 && id < COUNT) {
-                    output[id] = theEvent.getValue() > 0;
-                    costumes[id].setEnabled(output[id]);
+                    //output[id] = theEvent.getValue() > 0;
+                    costumes[id].setEnabled(theEvent.getValue() > 0);
                 }
             } else if (theEvent.getName().startsWith("effectList")) {
                 selectedEffect = (int) theEvent.getValue();

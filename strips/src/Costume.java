@@ -70,64 +70,7 @@ public class Costume {
             return;
         }
 
-        int from = segmentation[segment][0], to = segmentation[segment][1];
-
-/*        switch (segment) {
-            case 0:
-                from = 35;
-                to = 64;
-                break;
-            case 1:
-                from = 100;
-                to = 129;
-                break;
-            case 2:
-                from = 130;
-                to = 149;
-                break;
-            case 3:
-                from = 156;
-                to = 163;
-                break;
-            case 4:
-                from = 76;
-                to = 81;
-                break;
-            case 5:
-                from = 11;
-                to = 16;
-                break;
-            case 6:
-                from = 18;
-                to = 34;
-                break;
-            case 7:
-                from = 83;
-                to = 99;
-                break;
-            case 8:
-                from = 150;
-                to = 155;
-                break;
-            case 9:
-                from = 164;
-                to = 169;
-                break;
-            case 10:
-                from = 65;
-                to = 74;
-                break;
-            case 11:
-                from = 0;
-                to = 9;
-                break;
-            case 12:
-                from = 82;
-                to = 82;
-                break;
-        }    */
-
-        for (int i = from; i <= to; i++) {
+        for (int i = segmentation[segment][0]; i <= segmentation[segment][1]; i++) {
             setLedColor(i, color);
         }
     }
