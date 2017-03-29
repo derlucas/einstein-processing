@@ -1,12 +1,12 @@
+import hypermedia.net.UDP;
 import processing.core.PApplet;
 
 public class CostumeMiklasherich extends Costume {
 
 
-    public CostumeMiklasherich(PApplet base, int x, int y, String ipAddress) {
-        super(base, x, y, ipAddress);
-        this.ledsCount = 174;
-        this.outputColors = new int[ledsCount];
+    public CostumeMiklasherich(PApplet base, UDP udp, int x, int y, String ipAddress) {
+        super(base, udp, x, y, ipAddress);
+        setLedCount(174);
     }
 
     @Override
@@ -35,7 +35,7 @@ public class CostumeMiklasherich extends Costume {
             case 17: from = 123; to = 127; break;
         }
         for (int i = from; i <= to; i++) {
-            outputColors[i] = color;
+            setLedColor(i, color);
         }
 
     }
