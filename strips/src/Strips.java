@@ -10,8 +10,8 @@ import java.awt.*;
 public class Strips extends PApplet {
 
     private String addresses[] = {"192.168.80.121", "192.168.80.122", "192.168.80.123", "192.168.80.124",
-        "192.168.80.125", "192.168.80.126", "192.168.80.127", "192.168.80.128",
-        "192.168.80.129", "192.168.80.130", "192.168.80.131", "192.168.80.132"};
+            "192.168.80.125", "192.168.80.126", "192.168.80.127", "192.168.80.128",
+            "192.168.80.129", "192.168.80.130", "192.168.80.131", "192.168.80.132"};
 
     private int SENDDELAY = 40;
     private int COUNT = 12;
@@ -56,7 +56,8 @@ public class Strips extends PApplet {
             }
         }
 
-        costumes[0] = new CostumeKatharina(this, 0, 0, addresses[0]);
+//        costumes[0] = new CostumeKatharina(this, 0, 0, addresses[0]);
+        costumes[0] = new Costume(this, 0, 0, addresses[0]);
         for (int i = 1; i < COUNT; i++) {
             costumes[i] = new Costume(this, i * 65, 0, addresses[i]);
         }
@@ -70,8 +71,9 @@ public class Strips extends PApplet {
 
         cp5.addBang("bang").setPosition(250, 120).setSize(20, 20).plugTo(this, "impulse");
         cp5.addScrollableList("effectList").setPosition(300, 120)
-           .setBarHeight(20).setItemHeight(20).setLabel("effect").close()
-           .addItem("amp", 0).addItem("miladola", 1).addItem("RGBDEMO", 2).addItem("STEPS", 3).addItem("IRONMAN", 4);
+                .setBarHeight(20).setItemHeight(20).setLabel("effect").close()
+                .addItem("amp", 0).addItem("miladola", 1)
+                .addItem("RGBDEMO", 2).addItem("STEPS", 3);
 
         surface.setTitle("Stripse");
     }
@@ -83,13 +85,13 @@ public class Strips extends PApplet {
 
     public void sendOutputs() {
 
-        if(System.currentTimeMillis() - lastSendData < SENDDELAY) {
+        if (System.currentTimeMillis() - lastSendData < SENDDELAY) {
             return;
         }
 
         lastSendData = System.currentTimeMillis();
 
-        for(Costume costume: costumes) {
+        for (Costume costume : costumes) {
             costume.send(udp, blackout ? 0.0f : overallbrightness);
         }
     }
@@ -98,7 +100,7 @@ public class Strips extends PApplet {
         background(0);
 
         drawInputAmps();
-        fill(Color.HSBtoRGB(1.0f / note, 0.5f, 0.2f));
+        fill(Color.HSBtoRGB(1.0f / 12 * note, 0.5f, 0.5f));
         noStroke();
         rect(200, 200, 50, 50);
 
@@ -112,7 +114,7 @@ public class Strips extends PApplet {
         pushMatrix();
         translate(10, 400);
 
-        for(Costume costume: costumes) {
+        for (Costume costume : costumes) {
             costume.display();
         }
 
@@ -124,69 +126,22 @@ public class Strips extends PApplet {
         if (selectedEffect == 0) {  //amp
             for (int costume = 0; costume < COUNT; costume++) {
                 for (int seg = 0; seg < SEGMENTS; seg++) {
-                    costumes[costume].setSegmentColor(seg, color(255*amp[0]));
+                    costumes[costume].setSegmentColor(seg, color(255 * amp[costume]));
                 }
             }
-        }
-        else if (selectedEffect == 1) {
-
-            if (keyPressed) {
-                for (int i = 0; i < SEGMENTS; i++) {
-                    costumes[0].setSegmentColor(i, 0);
-                }
-
-                if (key == 'l') {
-                    costumes[0].setSegmentColor(0, color(10,0,255));
-                    costumes[0].setSegmentColor(1, color(10,0,255));
-                    costumes[0].setSegmentColor(16, color(10,0,255));
-                    costumes[0].setSegmentColor(17, color(10,0,255));
-                }
-                else if (key == 'm') {
-                    costumes[0].setSegmentColor(2, color(255,240,0));
-                    costumes[0].setSegmentColor(12, color(255,240,0));
-                    costumes[0].setSegmentColor(13, color(255,240,0));
-                }
-                else if (key == 'd') {
-                    costumes[0].setSegmentColor(6, color(255,0,0));
-                    costumes[0].setSegmentColor(7, color(255,0,0));
-                } else if (key == 'i') {
-                    for (int seg = 0; seg < SEGMENTS; seg++) {
-                        costumes[0].setSegmentColor(seg, color(255,0,0));
-                    }
-                } else if (key == 'o') {
-                    for (int seg = 0; seg < SEGMENTS; seg++) {
-                        costumes[0].setSegmentColor(seg, color(0,255,0));
-                    }
-                } else if (key == 'p') {
-                    for (int seg = 0; seg < SEGMENTS; seg++) {
-                        costumes[0].setSegmentColor(seg, color(0,0,255));
-                    }
-                }
-            }
-        }
-        else if (selectedEffect == 2) { // RGB demo fade
+        } else if (selectedEffect == 2) { // RGB demo fade
 
             for (int costume = 0; costume < COUNT; costume++) {
                 for (int seg = 0; seg < SEGMENTS; seg++) {
-                    costumes[costume].setSegmentColor(seg, color(255*redval, 255*greenval, 255*blueval));
+                    costumes[costume].setSegmentColor(seg, color(255 * redval, 255 * greenval, 255 * blueval));
                 }
             }
 
-        }
-        else if(selectedEffect == 3) {
+        } else if (selectedEffect == 3) {
             for (int costume = 0; costume < COUNT; costume++) {
                 for (int seg = 0; seg < SEGMENTS; seg++) {
                     costumes[costume].setSegmentColor(seg, step == seg ? color(255) : 0);
                 }
-            }
-        } else if (selectedEffect == 4) {
-            for (int costume = 0; costume < COUNT; costume++) {
-                for (int seg = 0; seg < SEGMENTS; seg++) {
-                    costumes[costume].setSegmentColor(seg, 0);
-                }
-                costumes[costume].setSegmentColor(3,  color(255 * amp[costume], 0, 0));
-                costumes[costume].setSegmentColor(4,  color(255 * amp[costume], 0, 0));
-                costumes[costume].setSegmentColor(5,  color(255 * amp[costume], 0, 0));
             }
         }
     }
@@ -212,11 +167,28 @@ public class Strips extends PApplet {
             int channel = Integer.parseInt(addr.substring(3));
             amp[channel - 1] = msg.get(0).floatValue();
             amp[channel - 1] = amp[channel - 1] * ampFactor;
+        } else if (msg.checkAddrPattern("/midinote")) {
+            note = msg.get(0).intValue() % 12;
+            System.out.println("addr: " + addr + " " + msg.get(0).intValue() + " vel: " + msg.get(1).intValue());
+            if (selectedEffect == 1) {  // mi la do la
+                if (note == 9) { // la
+                    for (int costume = 0; costume < COUNT; costume++) {
+                        costumes[costume].effectLA();
+                    }
+                } else if (note == 4) { // mi   unten linie
+                    for (int costume = 0; costume < COUNT; costume++) {
+                        costumes[costume].effectMI();
+                    }
+                } else if (note == 0) { // do
+                    for (int costume = 0; costume < COUNT; costume++) {
+                        costumes[costume].effectDO();
+                    }
+                }
+            }
+        } else if (msg.checkAddrPattern("/bjmidi")) {
+            System.out.println(msg.get(0).intValue());
         }
 
-        if (msg.checkAddrPattern("/keyNote")) {
-            note = msg.get(0).intValue();
-        }
     }
 
     public void controlEvent(ControlEvent theEvent) {
@@ -227,8 +199,7 @@ public class Strips extends PApplet {
                     output[id] = theEvent.getValue() > 0;
                     costumes[id].setEnabled(output[id]);
                 }
-            }
-            else if (theEvent.getName().startsWith("effectList")) {
+            } else if (theEvent.getName().startsWith("effectList")) {
                 selectedEffect = (int) theEvent.getValue();
             }
         }
