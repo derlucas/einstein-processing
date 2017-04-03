@@ -164,6 +164,8 @@ public class Costume {
         effectSingleColor(0);
         // mi   unten linie
         setSegmentColor(2, base.color(255, 240, 0));
+        setSegmentColor(12, base.color(255, 240, 0));
+        setSegmentColor(13, base.color(255, 240, 0));
     }
 
     void effectLA() {
@@ -172,6 +174,8 @@ public class Costume {
         // hosenträger
         setSegmentColor(0, base.color(0, 0, 255));
         setSegmentColor(1, base.color(0, 0, 255));
+        setSegmentColor(16, base.color(0, 0, 255));
+        setSegmentColor(17, base.color(0, 0, 255));
     }
 
     void effectDO() {

@@ -48,7 +48,7 @@ public class Strips extends PApplet {
         cp5 = new ControlP5(this);
 
         //        costumes[0] = new CostumeKatharina(this, 0, 0, addresses[0]);
-        costumes[0] = new Costume(this, udp, 0, 0, addresses[0]);
+        costumes[0] = new CostumeKruppa(this, udp, 0, 0, addresses[0]);
         for (int i = 1; i < COUNT; i++) {
             costumes[i] = new Costume(this, udp, i * 65, 0, addresses[i]);
         }
@@ -152,6 +152,22 @@ public class Strips extends PApplet {
             rect(i * 40, 12, 30, 30);
         }
         popMatrix();
+    }
+
+    public void keyPressed() {
+        if(key == 'm') {
+            for (Costume costume: costumes) {
+                costume.effectMI();
+            }
+        } else if(key == 'l') {
+            for (Costume costume: costumes) {
+                costume.effectLA();
+            }
+        } else if(key == 'd') {
+            for (Costume costume: costumes) {
+                costume.effectDO();
+            }
+        }
     }
 
     void oscEvent(OscMessage msg) {
