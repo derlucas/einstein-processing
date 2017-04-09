@@ -6,6 +6,8 @@ import oscP5.OscP5;
 import processing.core.PApplet;
 
 import java.awt.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Strips extends PApplet {
 
@@ -24,6 +26,7 @@ public class Strips extends PApplet {
     private int note;
     private int bjnote;
     private int velocity;
+    private int bjvelocity;
     private UDP udp;
     private boolean blackout = false;
     private float overallbrightness;
@@ -34,9 +37,10 @@ public class Strips extends PApplet {
     private int selectedEffect;
     private int step;
     private long lastSendData;
-    private Costume costumes[] = new Costume[COUNT];
+    private List<Costume> costumes = new ArrayList<>(COUNT);
     private boolean ampEnable = false;
     private boolean milaEnable = false;
+    private boolean milaFakeEnable = false;
     private int effect110Value = -1;
     private int effect110Duration = 50;
     private float attack = 1.0f;
@@ -54,18 +58,18 @@ public class Strips extends PApplet {
         cp5 = new ControlP5(this);
 
         int id = 0;
-        costumes[id] = new CostumeDemo(this, udp, id * 65, 0, addresses[id++]);
-        costumes[id] = new CostumeBilitza(this, udp, id * 65, 0, addresses[id++]);
-        costumes[id] = new CostumeBrandt(this, udp, id * 65, 0, addresses[id++]);
-        costumes[id] = new CostumeDeutschewitz(this, udp, id * 65, 0, addresses[id++]);
-        costumes[id] = new CostumeEberl(this, udp, id * 65, 0, addresses[id++]);
-        costumes[id] = new CostumeHellermann(this, udp, id * 65, 0, addresses[id++]);
-        costumes[id] = new CostumeKroedel(this, udp, id * 65, 0, addresses[id++]);
-        costumes[id] = new CostumeKruppa(this, udp, id * 65, 0, addresses[id++]);
-        costumes[id] = new CostumeMiklasherich(this, udp, id * 65, 0, addresses[id++]);
-        costumes[id] = new CostumePopken(this, udp, id * 65, 0, addresses[id++]);
-        costumes[id] = new CostumeStrotmann(this, udp, id * 65, 0, addresses[id++]);
-        costumes[id] = new CostumeWalter(this, udp, id * 65, 0, addresses[id++]);
+        costumes.add(new CostumeDemo(this, udp, id * 65, 0, addresses[id++]));
+        costumes.add(new CostumeBilitza(this, udp, id * 65, 0, addresses[id++]));
+        costumes.add(new CostumeBrandt(this, udp, id * 65, 0, addresses[id++]));
+        costumes.add(new CostumeDeutschewitz(this, udp, id * 65, 0, addresses[id++]));
+        costumes.add(new CostumeEberl(this, udp, id * 65, 0, addresses[id++]));
+        costumes.add(new CostumeHellermann(this, udp, id * 65, 0, addresses[id++]));
+        costumes.add(new CostumeKroedel(this, udp, id * 65, 0, addresses[id++]));
+        costumes.add(new CostumeKruppa(this, udp, id * 65, 0, addresses[id++]));
+        costumes.add(new CostumeMiklasherich(this, udp, id * 65, 0, addresses[id++]));
+        costumes.add(new CostumePopken(this, udp, id * 65, 0, addresses[id++]));
+        costumes.add(new CostumeStrotmann(this, udp, id * 65, 0, addresses[id++]));
+        costumes.add(new CostumeWalter(this, udp, id * 65, 0, addresses[id++]));
 
         for (int i = 0; i < COUNT; i++) {
             //output[i] = false;
@@ -90,10 +94,10 @@ public class Strips extends PApplet {
 
         cp5.addToggle("ampEnable").setPosition(300, 150).setSize(30, 15).setValue(false).setLabel("AMP");
         cp5.addToggle("milaEnable").setPosition(300 + 40, 150).setSize(30, 15).setValue(false).setLabel("MILA");
-        cp5.addToggle("opt2").setPosition(300 + 80, 150).setSize(30, 15).setValue(false).setLabel("OPT2");
+        cp5.addToggle("milaFakeEnable").setPosition(300 + 80, 150).setSize(30, 15).setValue(false).setLabel("MILAFAKE");
         cp5.addToggle("opt3").setPosition(300 + 120, 150).setSize(30, 15).setValue(false).setLabel("OPT3");
 
-        cp5.addBang("flash110").setPosition(300, 190).setSize(30, 15);
+        cp5.addBang("flash110").setPosition(300, 190).setSize(30, 30);
 
         surface.setTitle("STRIP CONTROLLER");
     }
@@ -104,10 +108,18 @@ public class Strips extends PApplet {
     }
 
     public void flash110() {
-        for (Costume costume : costumes) {
-            costume.effect110cmLine(color(255));
-        }
+        int color = color(255);
+        costumes.forEach(costume -> costume.effect110cmLine(color));
         effect110Value = effect110Duration;
+    }
+
+    public void milaEnable(boolean en) {
+        if (this.milaEnable && !en) {
+            for (Costume costume : costumes) {
+                costume.effectSingleColor(0);
+            }
+        }
+        this.milaEnable = en;
     }
 
     public void draw() {
@@ -117,22 +129,18 @@ public class Strips extends PApplet {
 
         stroke(20);
 
-        fill(Color.HSBtoRGB(map(note, 0, 12, 0.0f, 1.0f), 0.75f, 0.75f));
+        fill(Color.HSBtoRGB(map(note, 0, 127, 0.0f, 1.0f), 0.75f, map(velocity, 0, 127, 0.0f, 1.0f)));
         rect(220, 10, 20, 20);
 
-        fill(Color.HSBtoRGB(map(bjnote, 0, 127, 0.0f, 1.0f), 0.75f, 0.75f));
+        fill(Color.HSBtoRGB(map(bjnote, 0, 127, 0.0f, 1.0f), 0.75f, map(bjvelocity, 0, 127, 0.0f, 1.0f)));
         rect(245, 10, 20, 20);
 
         renderEffect();
 
-        // render and draw costumes
+        // draw costumes
         pushMatrix();
         translate(10, 400);
-
-        for (Costume costume : costumes) {
-            costume.display();
-        }
-
+        costumes.forEach(Costume::display);
         popMatrix();
 
         // send data via UDP
@@ -162,30 +170,26 @@ public class Strips extends PApplet {
 //                costumes[costume].effectSingleColor(color(255 * amp[costume]));
 //            }
         if (selectedEffect == 2) { // RGB demo fade
-            for (int costume = 0; costume < COUNT; costume++) {
-                costumes[costume].effectSingleColor(color(255 * redval, 255 * greenval, 255 * blueval));
-            }
+            int color = color(255 * redval, 255 * greenval, 255 * blueval);
+            costumes.forEach(e -> e.effectSingleColor(color));
         }
         else if (selectedEffect == 3) {
-            for (int costume = 0; costume < COUNT; costume++) {
+            costumes.forEach(costume -> {
                 for (int seg = 0; seg < SEGMENTS; seg++) {
-                    costumes[costume].setSegmentColor(seg, step == seg ? color(255) : 0);
+                    costume.setSegmentColor(seg, step == seg ? color(255) : 0);
                 }
-            }
+            });
         }
 
         if (effect110Value > 0) {
             effect110Value--;
-            for (Costume costume : costumes) {
-                costume.effect110cmLine(color(255 * ((float) effect110Value / (float) effect110Duration)));
-            }
+            int color = color(255 * ((float) effect110Value / (float) effect110Duration));
+            costumes.forEach(costume -> costume.effect110cmLine(color));
         }
         else if (effect110Value == 0) {
             effect110Value--;
-
-            for (Costume costume : costumes) {
-                costume.effect110cmLine(color(0));
-            }
+            int color = color(0);
+            costumes.forEach(costume -> costume.effect110cmLine(color));
         }
     }
 
@@ -232,25 +236,24 @@ public class Strips extends PApplet {
             amp[channel - 1] = amp[channel - 1] * preAmp;
         }
         else if (msg.checkAddrPattern("/midinote")) {
-            note = msg.get(0).intValue() % 12;
+            note = msg.get(0).intValue();
             velocity = msg.get(1).intValue();
-            System.out.println("addr: " + addr + " " + msg.get(0).intValue() + " vel: " + msg.get(1).intValue());
+            int noteModulo = note % 12;
+            int octave = note / 12;
+
+            if (milaFakeEnable) {
+                System.out.println("fake");
+            }
 
             if (milaEnable && velocity != 0) {  // mi la do la
-                if (note == 9) { // la
-                    for (Costume costume : costumes) {
-                        costume.effectLA();
-                    }
+                if (note == 9) { // la      // TODO: note angeben
+                    costumes.forEach(Costume::effectLA);
                 }
-                else if (note == 4) { // mi   unten linie
-                    for (Costume costume : costumes) {
-                        costume.effectMI();
-                    }
+                else if (note == 4) { // mi  // TODO: note angeben
+                    costumes.forEach(Costume::effectMI);
                 }
-                else if (note == 0) { // do
-                    for (Costume costume : costumes) {
-                        costume.effectDO();
-                    }
+                else if (note == 0) { // do  // TODO: note angeben
+                    costumes.forEach(Costume::effectDO);
                 }
             }
         }
@@ -269,7 +272,7 @@ public class Strips extends PApplet {
                 int id = theEvent.getId();
                 if (id >= 0 && id < COUNT) {
                     //output[id] = theEvent.getValue() > 0;
-                    costumes[id].setEnabled(theEvent.getValue() > 0);
+                    costumes.get(0).setEnabled(theEvent.getValue() > 0);
                 }
             }
             else if (theEvent.getName().startsWith("effectList")) {
@@ -286,9 +289,7 @@ public class Strips extends PApplet {
                 }
             }
             else if (theEvent.getName().startsWith("overallbrightness")) {
-                for (Costume costume : costumes) {
-                    costume.brightness(theEvent.getValue());
-                }
+                costumes.forEach(costume -> costume.brightness(theEvent.getValue()));
             }
         }
     }
