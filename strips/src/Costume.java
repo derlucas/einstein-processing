@@ -201,7 +201,8 @@ public class Costume {
         }
     }
 
-    void effect110cmLine(int color) {
+
+    void effect110cmLine(int color) {       // obere Linie
         //effectSingleColor(0);
         setSegmentColor(3, color);
         setSegmentColor(8, color);

@@ -5,7 +5,7 @@ public class CostumeKruppa extends CostumeEberl {
 
     CostumeKruppa(PApplet base, UDP udp, String ipAddress) {
         super(base, udp, ipAddress);
-        setLedCount(174);
+        setLedCount(170);
         segmentation = new int[][]{
                 {31, 55},
                 {93, 117},
@@ -23,11 +23,8 @@ public class CostumeKruppa extends CostumeEberl {
                 {124, 128},
                 {62, 65},
                 {0, 3},
-                {52, 61},
+                {57, 61},
                 {119, 123},
         };
     }
-
-
-
 }

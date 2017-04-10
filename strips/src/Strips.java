@@ -64,18 +64,18 @@ public class Strips extends PApplet {
         cp5 = new ControlP5(this);
 
         int id = 0;
-        costumes.add(new CostumeDemo(this, udp, addresses[id++]));
-        costumes.add(new CostumeBilitza(this, udp, addresses[id++]));
-        costumes.add(new CostumeBrandt(this, udp, addresses[id++]));
-        costumes.add(new CostumeDeutschewitz(this, udp, addresses[id++]));
-        costumes.add(new CostumeEberl(this, udp, addresses[id++]));
-        costumes.add(new CostumeHellermann(this, udp, addresses[id++]));
-        costumes.add(new CostumeKroedel(this, udp, addresses[id++]));
-        costumes.add(new CostumeKruppa(this, udp, addresses[id++]));
-        costumes.add(new CostumeMiklasherich(this, udp, addresses[id++]));
-        costumes.add(new CostumePopken(this, udp, addresses[id++]));
-        costumes.add(new CostumeStrotmann(this, udp, addresses[id++]));
-        costumes.add(new CostumeWalter(this, udp, addresses[id++]));
+        costumes.add(new CostumeMiklasherich(this, udp, addresses[id++]));      // Anna Miklashevich
+        costumes.add(new CostumeEberl(this, udp, addresses[id++]));             // Katharina Eberl
+        costumes.add(new CostumeHellermann(this, udp, addresses[id++]));        // Ulrike Hellermann
+        costumes.add(new CostumeKruppa(this, udp, addresses[id++]));            // Luisa Kruppa
+        costumes.add(new CostumeBilitza(this, udp, addresses[id++]));           // Dominique Bilitza
+        costumes.add(new CostumeKroedel(this, udp, addresses[id++]));           // Johanna Krödel
+        costumes.add(new CostumeBrandt(this, udp, addresses[id++]));            // Patrick Brandt
+        costumes.add(new CostumeStrotmann(this, udp, addresses[id++]));         // Fabian Strotmann
+        costumes.add(new CostumeDeutschewitz(this, udp, addresses[id++]));      // Jörg Deutschewitz
+        costumes.add(new CostumeDemo(this, udp, addresses[id++]));              // Michael Hofmeister
+        costumes.add(new CostumeWalter(this, udp, addresses[id++]));            // Christian Walter
+        costumes.add(new CostumePopken(this, udp, addresses[id++]));            // Julian Popken
 
         for (int i = 0; i < COUNT; i++) {
             //output[i] = false;
