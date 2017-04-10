@@ -3,8 +3,8 @@ import processing.core.PApplet;
 
 public class CostumeDemo extends Costume {
 
-    CostumeDemo(PApplet base, UDP udp, int x, int y, String ipAddress) {
-        super(base, udp, x, y, ipAddress);
+    CostumeDemo(PApplet base, UDP udp, String ipAddress) {
+        super(base, udp, ipAddress);
         setLedCount(170);
         segmentation = new int[][]{
             {35, 64}, {100, 129}, {130, 149}, {156, 163},
@@ -60,5 +60,50 @@ public class CostumeDemo extends Costume {
         setSegmentColor(3, color);
         setSegmentColor(8, color);
         setSegmentColor(9, color);
+    }
+
+    void effectSymbol(Symbols symbol, int color) {
+
+        switch (symbol) {
+            case RIGHT:
+                setSegmentColor(0, color);
+                break;
+            case LEFT:
+                setSegmentColor(1, color);
+                break;
+            case BACKSLASH:
+                setSegmentColor(5, color);
+                setSegmentColor(6, color);
+                setSegmentColor(11, color);
+                break;
+            case SLASH:
+                setSegmentColor(4, color);
+                setSegmentColor(7, color);
+                setSegmentColor(10, color);
+                break;
+            case MINUS:
+                setSegmentColor(3, color);
+                setSegmentColor(8, color);
+                setSegmentColor(9, color);
+                break;
+            case SUSPENDERS:
+                setSegmentColor(0, color);
+                setSegmentColor(1, color);
+                break;
+            case X:
+                setSegmentColor(6, color);
+                setSegmentColor(5, color);
+                setSegmentColor(11, color);
+                setSegmentColor(7, color);
+                setSegmentColor(4, color);
+                setSegmentColor(10, color);
+                break;
+            case UX:
+                effectSingleColor(color);
+                break;
+            default:
+                effectSingleColor(0);
+                break;
+        }
     }
 }

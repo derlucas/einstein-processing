@@ -14,26 +14,23 @@ public class Costume {
     int ledsCount = 170;
     final PApplet base;
     final String ipAddress;
-    final int x;
-    final int y;
     final UDP udp;
     float outputRGB[][] = new float[ledsCount][3];
-//    float setRGB[][] = new float[ledsCount][3];
+    float setRGB[][] = new float[ledsCount][3];
     boolean enableOutput = false;
     float brightness = 1.0f;
-//    float attack = 1.0f;
-//    float release = 1.0f;
-//    private long fadetimer;
+    boolean blackout = false;
+    float attack = 1.0f;
+    float release = 1.0f;
+    private long fadetimer;
 
-    Costume(PApplet base, UDP udp, int x, int y, String ipAddress) {
+    Costume(PApplet base, UDP udp, String ipAddress) {
         this.base = base;
-        this.x = x;
-        this.y = y;
         this.ipAddress = ipAddress;
         this.udp = udp;
         for (int led = 0; led < ledsCount; led++) {
             for (int color = 0; color < 3; color++) {
-//                setRGB[led][color] = 0;
+                setRGB[led][color] = 0;
                 outputRGB[led][color] = 0;
             }
         }
@@ -42,43 +39,35 @@ public class Costume {
     void setLedCount(int count) {
         this.ledsCount = count;
         outputRGB = new float[ledsCount][3];
-//        setRGB = new float[ledsCount][3];
+        setRGB = new float[ledsCount][3];
         for (int led = 0; led < ledsCount; led++) {
             for (int color = 0; color < 3; color++) {
-//                setRGB[led][color] = 0;
+                setRGB[led][color] = 0;
                 outputRGB[led][color] = 0;
             }
         }
     }
 
     void setLedColor(int led, int color) {
-//        setRGB[led][0] = base.red(color) / 255.0f;
-//        setRGB[led][1] = base.green(color) / 255.0f;
-//        setRGB[led][2] = base.blue(color) / 255.0f;
-        outputRGB[led][0] = base.red(color) / 255.0f;
-        outputRGB[led][1] = base.green(color) / 255.0f;
-        outputRGB[led][2] = base.blue(color) / 255.0f;
+        setRGB[led][0] = base.red(color) / 255.0f;
+        setRGB[led][1] = base.green(color) / 255.0f;
+        setRGB[led][2] = base.blue(color) / 255.0f;
     }
 
     void display() {
         base.fill(0);
         base.stroke(20);
-        base.pushMatrix();
-        base.translate(x, y);
-        //base.rect(0, 0, 60, ledsCount / 10 * 6);
 
         int ledId = 0;
         for (int j = 0; j < 20; j++) {
-            for(int i = 0; i < 10; i++) {
-                if(ledId < ledsCount) {
+            for (int i = 0; i < 10; i++) {
+                if (ledId < ledsCount) {
                     base.fill(base.color(255 * brightness * outputRGB[ledId][0], 255 * brightness * outputRGB[ledId][1], 255 * brightness * outputRGB[ledId][2]));
                     base.rect(6 * i, 6 * j, 6, 6);
                 }
                 ledId++;
             }
         }
-
-        base.popMatrix();
     }
 
     void setSegmentColor(int segment, int color) {
@@ -102,13 +91,17 @@ public class Costume {
         this.brightness = brightness;
     }
 
-//    void attack(float attack) {
-//        this.attack = attack;
-//    }
-//
-//    void release(float release) {
-//        this.release = release;
-//    }
+    void blackout(boolean bo) {
+        this.blackout = bo;
+    }
+
+    void attack(float attack) {
+        this.attack = attack;
+    }
+
+    void release(float release) {
+        this.release = release;
+    }
 
     void send() {
         if (!enableOutput) {
@@ -121,7 +114,7 @@ public class Costume {
         buffer[2] = 0;  // reserved
 
         for (int j = 0; j < ledsCount; j++) {
-            if (brightness < 0.01) {
+            if (blackout || brightness < 0.01) {
                 buffer[3 + (j * 3)] = (byte) (0);
                 buffer[3 + (j * 3) + 1] = (byte) (0);
                 buffer[3 + (j * 3) + 2] = (byte) (0);
@@ -136,45 +129,45 @@ public class Costume {
         udp.send(buffer, ipAddress, 4210);
     }
 
-//    void render() {
-//
-//        if (attack >= 0.99f && release >= 0.99f) {
-//             direct switching
-//            for (int led = 0; led < ledsCount; led++) {
-//                for (int color = 0; color < 3; color++) {
-//                    outputRGB[led][color] = setRGB[led][color];
-//                }
-//            }
-//        }
-//        else if (base.millis() - fadetimer > 10) {
-//            fadedelta();
-//            fadetimer = base.millis();
-//        }
-//    }
+    void render() {
 
-//    private void fadedelta() {
-//        for (int i = 0; i < ledsCount; i++) {
-//            for (int color = 0; color < 3; color++) {
-//
-//                float diff = outputRGB[i][color] - setRGB[i][color];
-//
-//                if (Math.abs(diff) > 0.01) {
-//                    if (diff > 0) {
-//                        outputRGB[i][color] -= diff * release;
-//                        if (outputRGB[i][color] > 1.0f) {
-//                            outputRGB[i][color] = 1.0f;
-//                        }
-//                    }
-//                    else {
-//                        outputRGB[i][color] -= diff * attack;
-//                        if (outputRGB[i][color] < 0.0f) {
-//                            outputRGB[i][color] = 0.0f;
-//                        }
-//                    }
-//                }
-//            }
-//        }
-//    }
+        if (attack >= 0.99f && release >= 0.99f) {
+            // direct switching
+            for (int led = 0; led < ledsCount; led++) {
+                for (int color = 0; color < 3; color++) {
+                    outputRGB[led][color] = setRGB[led][color];
+                }
+            }
+        }
+        else if (base.millis() - fadetimer > 10) {
+            fadedelta();
+            fadetimer = base.millis();
+        }
+    }
+
+    private void fadedelta() {
+        for (int i = 0; i < ledsCount; i++) {
+            for (int color = 0; color < 3; color++) {
+
+                float diff = outputRGB[i][color] - setRGB[i][color];
+
+                if (Math.abs(diff) > 0.01) {
+                    if (diff > 0) {
+                        outputRGB[i][color] -= diff * release;
+                        if (outputRGB[i][color] > 1.0f) {
+                            outputRGB[i][color] = 1.0f;
+                        }
+                    }
+                    else {
+                        outputRGB[i][color] -= diff * attack;
+                        if (outputRGB[i][color] < 0.0f) {
+                            outputRGB[i][color] = 0.0f;
+                        }
+                    }
+                }
+            }
+        }
+    }
 
     void effectMI() {
         effectSingleColor(0);
@@ -215,5 +208,65 @@ public class Costume {
         setSegmentColor(9, color);
         setSegmentColor(10, color);
         setSegmentColor(11, color);
+    }
+
+    void effectSymbol(Symbols symbol, int color) {
+
+        switch (symbol) {
+            case RIGHT:
+                setSegmentColor(0, color);
+                setSegmentColor(16, color);
+                break;
+            case LEFT:
+                setSegmentColor(1, color);
+                setSegmentColor(17, color);
+                break;
+            case BACKSLASH:
+                setSegmentColor(5, color);
+                setSegmentColor(6, color);
+                setSegmentColor(15, color);
+                break;
+            case SLASH:
+                setSegmentColor(4, color);
+                setSegmentColor(7, color);
+                setSegmentColor(14, color);
+                break;
+            case MINUS:
+                effect110cmLine(color);
+                break;
+            case SUSPENDERS:
+                setSegmentColor(0, color);
+                setSegmentColor(1, color);
+                setSegmentColor(16, color);
+                setSegmentColor(17, color);
+                break;
+            case X:
+                setSegmentColor(4, color);
+                setSegmentColor(5, color);
+                setSegmentColor(6, color);
+                setSegmentColor(7, color);
+                setSegmentColor(14, color);
+                setSegmentColor(15, color);
+                break;
+            case UX:
+                setSegmentColor(0, color);
+                setSegmentColor(1, color);
+                setSegmentColor(2, color);
+                setSegmentColor(3, color);
+                setSegmentColor(4, color);
+                setSegmentColor(5, color);
+                setSegmentColor(6, color);
+                setSegmentColor(7, color);
+                setSegmentColor(8, color);
+                setSegmentColor(9, color);
+                setSegmentColor(14, color);
+                setSegmentColor(15, color);
+                setSegmentColor(16, color);
+                setSegmentColor(17, color);
+                break;
+            default:
+                effectSingleColor(0);
+                break;
+        }
     }
 }

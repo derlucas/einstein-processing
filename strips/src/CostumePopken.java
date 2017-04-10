@@ -3,8 +3,8 @@ import processing.core.PApplet;
 
 public class CostumePopken extends CostumeEberl {
 
-    CostumePopken(PApplet base, UDP udp, int x, int y, String ipAddress) {
-        super(base, udp, x, y, ipAddress);
+    CostumePopken(PApplet base, UDP udp, String ipAddress) {
+        super(base, udp, ipAddress);
         setLedCount(174);
         segmentation = new int[][]{
             {32, 5}, {96, 121}, {134, 145}, {160, 166},
@@ -22,5 +22,4 @@ public class CostumePopken extends CostumeEberl {
         setSegmentColor(12, color);
         setSegmentColor(13, color);
     }
-
 }
