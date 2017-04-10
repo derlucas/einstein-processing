@@ -38,13 +38,14 @@ public class Strips extends PApplet {
     private int outputColors[][] = new int[COUNT][170];
     private long millisDataSend;
     private long millisAudioRender;
-    private List<Costume> costumes = new ArrayList<>(COUNT);
+    private List<Costume> costumes = new ArrayList<>();
     private boolean ampEnable = false;
     private boolean rgbEnable = false;
     private boolean milaEnable = false;
     private boolean milaFakeEnable = false;
     private boolean knee3Enable = false;
     private boolean trialEnable = false;
+    private boolean midiEnable = true;
     private int effect110Value = -1;
     private int effect110Duration = 50;
     private float attack = 1.0f;
@@ -63,19 +64,18 @@ public class Strips extends PApplet {
         oscP5 = new OscP5(this, 2002);
         cp5 = new ControlP5(this);
 
-        int id = 0;
-        costumes.add(new CostumeMiklasherich(this, udp, addresses[id++]));      // Anna Miklashevich
-        costumes.add(new CostumeEberl(this, udp, addresses[id++]));             // Katharina Eberl
-        costumes.add(new CostumeHellermann(this, udp, addresses[id++]));        // Ulrike Hellermann
-        costumes.add(new CostumeKruppa(this, udp, addresses[id++]));            // Luisa Kruppa
-        costumes.add(new CostumeBilitza(this, udp, addresses[id++]));           // Dominique Bilitza
-        costumes.add(new CostumeKroedel(this, udp, addresses[id++]));           // Johanna Krödel
-        costumes.add(new CostumeBrandt(this, udp, addresses[id++]));            // Patrick Brandt
-        costumes.add(new CostumeStrotmann(this, udp, addresses[id++]));         // Fabian Strotmann
-        costumes.add(new CostumeDeutschewitz(this, udp, addresses[id++]));      // Jörg Deutschewitz
-        costumes.add(new CostumeDemo(this, udp, addresses[id++]));              // Michael Hofmeister
-        costumes.add(new CostumeWalter(this, udp, addresses[id++]));            // Christian Walter
-        costumes.add(new CostumePopken(this, udp, addresses[id++]));            // Julian Popken
+        costumes.add(new CostumeMiklasherich(this, udp, addresses[5]));      // Anna Miklashevich
+        costumes.add(new CostumeEberl(this, udp, addresses[10]));            // Katharina Eberl
+        costumes.add(new CostumeHellermann(this, udp, addresses[2]));        // Ulrike Hellermann
+        costumes.add(new CostumeKruppa(this, udp, addresses[3]));            // Luisa Kruppa
+        costumes.add(new CostumeBilitza(this, udp, addresses[4]));           // Dominique Bilitza
+        costumes.add(new CostumeKroedel(this, udp, addresses[0]));           // Johanna Krödel           1
+        costumes.add(new CostumeBrandt(this, udp, addresses[6]));            // Patrick Brandt
+        costumes.add(new CostumeStrotmann(this, udp, addresses[7]));         // Fabian Strotmann
+        costumes.add(new CostumeDeutschewitz(this, udp, addresses[8]));      // Jörg Deutschewitz
+        costumes.add(new CostumeDemo(this, udp, addresses[9]));              // Michael Hofmeister
+        costumes.add(new CostumeWalter(this, udp, addresses[1]));            // Christian Walter         2
+        costumes.add(new CostumePopken(this, udp, addresses[11]));           // Julian Popken
 
         for (int i = 0; i < COUNT; i++) {
             //output[i] = false;
@@ -99,6 +99,7 @@ public class Strips extends PApplet {
         cp5.addSlider("releaseAudio").setPosition(10, y += 25).setSize(100, 20).setRange(0.0f, 1.0f).setValue(1.0f);
 
         cp5.addToggle("blackout").setPosition(250, 70).setSize(30, 15).setId(12).setValue(false).setLabel("BO");
+        cp5.addToggle("midiEnable").setPosition(210, 70).setSize(30, 15).setLabel("MIDI");
 
         int x = 0;
         cp5.addToggle("rgbEnable").setPosition(300 + x++ * 40, 150).setSize(30, 15).setValue(false).setLabel("RGB");
@@ -338,26 +339,26 @@ public class Strips extends PApplet {
             costume.effectSingleColor(0);
         }
 
-        int color = 0;
+        int color;
 
         if (num == 2) {
             color = color(0, 0, 255);
+            costumes.get(1).effectSymbol(Symbols.BACKSLASH, color);
+            costumes.get(2).effectSymbol(Symbols.BACKSLASH, color);
+            costumes.get(3).effectSymbol(Symbols.BACKSLASH, color);
             costumes.get(4).effectSymbol(Symbols.BACKSLASH, color);
-            costumes.get(5).effectSymbol(Symbols.BACKSLASH, color);
-            costumes.get(6).effectSymbol(Symbols.BACKSLASH, color);
-            costumes.get(7).effectSymbol(Symbols.BACKSLASH, color);
         }
         else if (num == 3) {
             color = color(255, 0, 0);
-            costumes.get(2).effectSymbol(Symbols.SLASH, color);
-            costumes.get(3).effectSymbol(Symbols.SLASH, color);
-            costumes.get(8).effectSymbol(Symbols.SLASH, color);
+            costumes.get(6).effectSymbol(Symbols.SLASH, color);
+            costumes.get(0).effectSymbol(Symbols.SLASH, color);
+            costumes.get(5).effectSymbol(Symbols.SLASH, color);
             costumes.get(9).effectSymbol(Symbols.SLASH, color);
         }
         else if (num == 4) {
             color = color(255, 255, 0);
-            costumes.get(0).effectSymbol(Symbols.X, color);
-            costumes.get(1).effectSymbol(Symbols.X, color);
+            costumes.get(7).effectSymbol(Symbols.X, color);
+            costumes.get(8).effectSymbol(Symbols.X, color);
             costumes.get(10).effectSymbol(Symbols.X, color);
             costumes.get(11).effectSymbol(Symbols.X, color);
         }
@@ -382,7 +383,10 @@ public class Strips extends PApplet {
             float newAmpValue = msg.get(0).floatValue() * preAmp;
             amp[channel - 1] = newAmpValue;
         }
-        else if (msg.checkAddrPattern("/midinote")) {
+        else if(addr.startsWith("freq")) {
+            //System.out.println("freq "  + addr);
+        }
+        else if (msg.checkAddrPattern("/midinote") && midiEnable) {
             note = msg.get(0).intValue();
             velocity = msg.get(1).intValue();
             int noteModulo = note % 12;
@@ -392,14 +396,18 @@ public class Strips extends PApplet {
                 System.out.println("fake");
             }
 
-            if (milaEnable && velocity != 0) {  // mi la do la
-                if (note == 9) { // la      // TODO: note angeben
+            if(velocity != 0) {
+                System.out.println("mila: " + note + " oct: " + octave + " mod: " + noteModulo);
+            }
+
+            if (milaEnable && octave == 5 && velocity != 0) {  // mi la do la
+                if (noteModulo == 9) { // la      // TODO: note angeben
                     costumes.forEach(Costume::effectLA);
                 }
-                else if (note == 4) { // mi  // TODO: note angeben
+                else if (noteModulo == 4) { // mi  // TODO: note angeben
                     costumes.forEach(Costume::effectMI);
                 }
-                else if (note == 0) { // do  // TODO: note angeben
+                else if (noteModulo == 0) { // do  // TODO: note angeben
                     costumes.forEach(Costume::effectDO);
                 }
             }
@@ -436,11 +444,36 @@ public class Strips extends PApplet {
                 }
             }
         }
-        else if (msg.checkAddrPattern("/bjmidi")) {
+        else if (msg.checkAddrPattern("/bjmidi") && midiEnable) {
             bjnote = msg.get(0).intValue();
+            bjvelocity = msg.get(1).intValue();
+            System.out.println("bjmidi " + bjnote);
 
-            if (bjnote == 40) {
+            if (bjnote == 33 && bjvelocity != 0) {
                 flash110();
+            }
+
+            if(knee3Enable && bjvelocity != 0) {
+                switch (bjnote) {
+                    case 25:
+                    case 28:
+                    case 31:
+                        // 4
+                        knee3(4);
+                        break;
+                    case 26:
+                    case 29:
+                    case 32:
+                        // 3
+                        knee3(3);
+                        break;
+                    case 27:
+                    case 30:
+                        // 2
+                        knee3(2);
+                        break;
+                }
+
             }
         }
     }
@@ -451,7 +484,7 @@ public class Strips extends PApplet {
                 int id = theEvent.getId();
                 if (id >= 0 && id < COUNT) {
                     //output[id] = theEvent.getValue() > 0;
-                    costumes.get(0).setEnabled(theEvent.getValue() > 0);
+                    costumes.get(id).setEnabled(theEvent.getValue() > 0);
                 }
             }
             else if (theEvent.getName().startsWith("attack")) {

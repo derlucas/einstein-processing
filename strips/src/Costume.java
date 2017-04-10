@@ -101,21 +101,23 @@ public abstract class Costume {
             return;
         }
 
-        byte[] buffer = new byte[180 * 3 + 3];  // 3 control bytes at the beginning
+        byte[] buffer = new byte[190 * 3 + 3];  // 3 control bytes at the beginning
         buffer[0] = 0;  // 1 for gamma = on
         buffer[1] = 0;  // strip ID (0-3)
         buffer[2] = 0;  // reserved
 
-        for (int j = 0; j < ledsCount; j++) {
+        for (int j = 0; j < 190; j++) {
             if (blackout || brightness < 0.01) {
                 buffer[3 + (j * 3)] = (byte) (0);
                 buffer[3 + (j * 3) + 1] = (byte) (0);
                 buffer[3 + (j * 3) + 2] = (byte) (0);
             }
             else {
-                buffer[3 + (j * 3)] = (byte) (255 * outputRGB[j][0] * brightness);
-                buffer[3 + (j * 3) + 1] = (byte) (255 * outputRGB[j][1] * brightness);
-                buffer[3 + (j * 3) + 2] = (byte) (255 * outputRGB[j][2] * brightness);
+                if(j < ledsCount) {
+                    buffer[3 + (j * 3)] = (byte) (255 * outputRGB[j][0] * brightness);
+                    buffer[3 + (j * 3) + 1] = (byte) (255 * outputRGB[j][1] * brightness);
+                    buffer[3 + (j * 3) + 2] = (byte) (255 * outputRGB[j][2] * brightness);
+                }
             }
         }
 
@@ -144,8 +146,8 @@ public abstract class Costume {
 
                 float diff = outputRGB[i][color] - setRGB[i][color];
 
-                if (Math.abs(diff) > 0.01) {
-                    if (diff > 0) {
+                if (Math.abs(diff) > 0.001) {
+                    if (diff > 0.0) {
                         outputRGB[i][color] -= diff * release;
                         if (outputRGB[i][color] > 1.0f) {
                             outputRGB[i][color] = 1.0f;
@@ -165,27 +167,33 @@ public abstract class Costume {
     void effectMI() {
         effectSingleColor(0);
         // mi   unten linie
-        setSegmentColor(2, base.color(255, 240, 0));
-        setSegmentColor(12, base.color(255, 240, 0));
-        setSegmentColor(13, base.color(255, 240, 0));
+        int color = base.color(0,0,255);
+        setSegmentColor(2,  color);
+        setSegmentColor(12, color);
+        setSegmentColor(13, color);
     }
 
     void effectLA() {
         effectSingleColor(0);
 
         // hosenträger
-        setSegmentColor(0, base.color(0, 0, 255));
-        setSegmentColor(1, base.color(0, 0, 255));
-        setSegmentColor(16, base.color(0, 0, 255));
-        setSegmentColor(17, base.color(0, 0, 255));
+        int color = base.color(0,0,255);
+        setSegmentColor(0,  color);
+        setSegmentColor(1,  color);
+        setSegmentColor(16, color);
+        setSegmentColor(17, color);
     }
 
     void effectDO() {
         effectSingleColor(0);
-
-        // V neck
-        setSegmentColor(6, base.color(255, 0, 0));
-        setSegmentColor(7, base.color(255, 0, 0));
+        // X
+        int color = base.color(255,0,0);
+        setSegmentColor(6,  color);
+        setSegmentColor(7,  color);
+        setSegmentColor(4,  color);
+        setSegmentColor(5,  color);
+        setSegmentColor(14, color);
+        setSegmentColor(15, color);
     }
 
     void effectSingleColor(int color) {
