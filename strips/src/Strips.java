@@ -64,17 +64,17 @@ public class Strips extends PApplet {
         oscP5 = new OscP5(this, 2002);
         cp5 = new ControlP5(this);
 
-        costumes.add(new CostumeMiklasherich(this, udp, addresses[5]));      // Anna Miklashevich
-        costumes.add(new CostumeEberl(this, udp, addresses[10]));            // Katharina Eberl
+        costumes.add(new CostumeMiklasherich(this, udp, addresses[0]));      // Anna Miklashevich
+        costumes.add(new CostumeEberl(this, udp, addresses[1]));             // Katharina Eberl
         costumes.add(new CostumeHellermann(this, udp, addresses[2]));        // Ulrike Hellermann
         costumes.add(new CostumeKruppa(this, udp, addresses[3]));            // Luisa Kruppa
         costumes.add(new CostumeBilitza(this, udp, addresses[4]));           // Dominique Bilitza
-        costumes.add(new CostumeKroedel(this, udp, addresses[0]));           // Johanna Krödel           1
+        costumes.add(new CostumeKroedel(this, udp, addresses[5]));           // Johanna Krödel           1
         costumes.add(new CostumeBrandt(this, udp, addresses[6]));            // Patrick Brandt
         costumes.add(new CostumeStrotmann(this, udp, addresses[7]));         // Fabian Strotmann
         costumes.add(new CostumeDeutschewitz(this, udp, addresses[8]));      // Jörg Deutschewitz
-        costumes.add(new CostumeDemo(this, udp, addresses[9]));              // Michael Hofmeister
-        costumes.add(new CostumeWalter(this, udp, addresses[1]));            // Christian Walter         2
+        costumes.add(new CostumeHofmeister(this, udp, addresses[9]));        // Michael Hofmeister
+        costumes.add(new CostumeWalter(this, udp, addresses[10]));           // Christian Walter         2
         costumes.add(new CostumePopken(this, udp, addresses[11]));           // Julian Popken
 
         for (int i = 0; i < COUNT; i++) {
