@@ -10,7 +10,7 @@ public class CostumeBilitza extends CostumeEberl {
                 {30, 51},
                 {89, 110},
                 {124, 136},
-                {150, 164},
+                {150, 154},
                 {65, 70},
                 {6, 10},
                 {12, 29},

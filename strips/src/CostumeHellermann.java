@@ -5,5 +5,6 @@ public class CostumeHellermann extends CostumeEberl {
 
     CostumeHellermann(PApplet base, UDP udp, String ipAddress) {
         super(base, udp, ipAddress);
+
     }
 }

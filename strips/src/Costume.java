@@ -1,22 +1,15 @@
 import hypermedia.net.UDP;
 import processing.core.PApplet;
 
-public class Costume {
+public abstract class Costume {
 
-    public int segmentation[][] = new int[][]{
-        {35, 64}, {100, 129}, {130, 149}, {156, 163},
-        {76, 81}, {11, 16}, {18, 34}, {83, 99},
-        {150, 155}, {164, 169}, {65, 74}, {0, 9},
-        {82, 82},
-        {169, 169}, {169, 169}, {169, 169}, {169, 169}, {169, 169}
-    };
-
-    int ledsCount = 170;
+    int segmentation[][];
     final PApplet base;
     final String ipAddress;
     final UDP udp;
-    float outputRGB[][] = new float[ledsCount][3];
-    float setRGB[][] = new float[ledsCount][3];
+    int ledsCount;
+    float outputRGB[][];
+    float setRGB[][];
     boolean enableOutput = false;
     float brightness = 1.0f;
     boolean blackout = false;
