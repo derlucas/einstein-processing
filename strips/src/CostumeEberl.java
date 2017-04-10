@@ -3,8 +3,8 @@ import processing.core.PApplet;
 
 public class CostumeEberl extends Costume {
 
-    CostumeEberl(PApplet base, UDP udp, int x, int y, String ipAddress) {
-        super(base, udp, x, y, ipAddress);
+    CostumeEberl(PApplet base, UDP udp, String ipAddress) {
+        super(base, udp, ipAddress);
         setLedCount(174);
         segmentation = new int[][]{
             {32, 56}, {96, 120}, {134, 145}, {160, 166},
@@ -13,8 +13,4 @@ public class CostumeEberl extends Costume {
             {146, 152}, {128, 133}, {64, 68}, {0, 4},
             {58, 63}, {122, 127}};
     }
-
-
-
-
 }

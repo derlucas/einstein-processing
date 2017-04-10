@@ -3,8 +3,8 @@ import processing.core.PApplet;
 
 public class CostumeKruppa extends CostumeEberl {
 
-    CostumeKruppa(PApplet base, UDP udp, int x, int y, String ipAddress) {
-        super(base, udp, x, y, ipAddress);
+    CostumeKruppa(PApplet base, UDP udp, String ipAddress) {
+        super(base, udp, ipAddress);
         setLedCount(174);
         segmentation = new int[][]{
                 {31, 55},

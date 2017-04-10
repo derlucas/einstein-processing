@@ -14,21 +14,18 @@ public class Costume {
     int ledsCount = 170;
     final PApplet base;
     final String ipAddress;
-    final int x;
-    final int y;
     final UDP udp;
     float outputRGB[][] = new float[ledsCount][3];
     float setRGB[][] = new float[ledsCount][3];
     boolean enableOutput = false;
     float brightness = 1.0f;
+    boolean blackout = false;
     float attack = 1.0f;
     float release = 1.0f;
     private long fadetimer;
 
-    Costume(PApplet base, UDP udp, int x, int y, String ipAddress) {
+    Costume(PApplet base, UDP udp, String ipAddress) {
         this.base = base;
-        this.x = x;
-        this.y = y;
         this.ipAddress = ipAddress;
         this.udp = udp;
         for (int led = 0; led < ledsCount; led++) {
@@ -60,9 +57,17 @@ public class Costume {
     void display() {
         base.fill(0);
         base.stroke(20);
-        base.rect(x, y, 60, 80);
-        base.fill(base.color(255 * brightness * outputRGB[0][0], 255 * brightness * outputRGB[0][1], 255 * brightness * outputRGB[0][2]));
-        base.rect(x + 5, y + 5, 50, 70);
+
+        int ledId = 0;
+        for (int j = 0; j < 20; j++) {
+            for (int i = 0; i < 10; i++) {
+                if (ledId < ledsCount) {
+                    base.fill(base.color(255 * brightness * outputRGB[ledId][0], 255 * brightness * outputRGB[ledId][1], 255 * brightness * outputRGB[ledId][2]));
+                    base.rect(6 * i, 6 * j, 6, 6);
+                }
+                ledId++;
+            }
+        }
     }
 
     void setSegmentColor(int segment, int color) {
@@ -86,6 +91,10 @@ public class Costume {
         this.brightness = brightness;
     }
 
+    void blackout(boolean bo) {
+        this.blackout = bo;
+    }
+
     void attack(float attack) {
         this.attack = attack;
     }
@@ -105,7 +114,7 @@ public class Costume {
         buffer[2] = 0;  // reserved
 
         for (int j = 0; j < ledsCount; j++) {
-            if (brightness < 0.01) {
+            if (blackout || brightness < 0.01) {
                 buffer[3 + (j * 3)] = (byte) (0);
                 buffer[3 + (j * 3) + 1] = (byte) (0);
                 buffer[3 + (j * 3) + 2] = (byte) (0);
@@ -193,11 +202,71 @@ public class Costume {
     }
 
     void effect110cmLine(int color) {
-        effectSingleColor(0);
+        //effectSingleColor(0);
         setSegmentColor(3, color);
         setSegmentColor(8, color);
         setSegmentColor(9, color);
         setSegmentColor(10, color);
         setSegmentColor(11, color);
+    }
+
+    void effectSymbol(Symbols symbol, int color) {
+
+        switch (symbol) {
+            case RIGHT:
+                setSegmentColor(0, color);
+                setSegmentColor(16, color);
+                break;
+            case LEFT:
+                setSegmentColor(1, color);
+                setSegmentColor(17, color);
+                break;
+            case BACKSLASH:
+                setSegmentColor(5, color);
+                setSegmentColor(6, color);
+                setSegmentColor(15, color);
+                break;
+            case SLASH:
+                setSegmentColor(4, color);
+                setSegmentColor(7, color);
+                setSegmentColor(14, color);
+                break;
+            case MINUS:
+                effect110cmLine(color);
+                break;
+            case SUSPENDERS:
+                setSegmentColor(0, color);
+                setSegmentColor(1, color);
+                setSegmentColor(16, color);
+                setSegmentColor(17, color);
+                break;
+            case X:
+                setSegmentColor(4, color);
+                setSegmentColor(5, color);
+                setSegmentColor(6, color);
+                setSegmentColor(7, color);
+                setSegmentColor(14, color);
+                setSegmentColor(15, color);
+                break;
+            case UX:
+                setSegmentColor(0, color);
+                setSegmentColor(1, color);
+                setSegmentColor(2, color);
+                setSegmentColor(3, color);
+                setSegmentColor(4, color);
+                setSegmentColor(5, color);
+                setSegmentColor(6, color);
+                setSegmentColor(7, color);
+                setSegmentColor(8, color);
+                setSegmentColor(9, color);
+                setSegmentColor(14, color);
+                setSegmentColor(15, color);
+                setSegmentColor(16, color);
+                setSegmentColor(17, color);
+                break;
+            default:
+                effectSingleColor(0);
+                break;
+        }
     }
 }
