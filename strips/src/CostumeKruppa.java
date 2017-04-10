@@ -19,7 +19,7 @@ public class CostumeKruppa extends CostumeEberl {
                 {164, 166},
                 {150, 152},
                 {167, 169},
-                {149, 145},
+                {145, 149},
                 {124, 128},
                 {62, 65},
                 {0, 3},
