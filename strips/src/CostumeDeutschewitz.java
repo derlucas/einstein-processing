@@ -8,7 +8,7 @@ public class CostumeDeutschewitz extends CostumeEberl {
         setLedCount(180);
         segmentation = new int[][]{
                 {31, 52},
-                {82, 100},
+                {91, 112},
                 {127, 143},
                 {159, 170},
                 {66, 73},
@@ -30,7 +30,6 @@ public class CostumeDeutschewitz extends CostumeEberl {
 
     @Override
     void effect110cmLine(int color) {
-        effectSingleColor(0);
         setSegmentColor(2, color);
         setSegmentColor(12, color);
         setSegmentColor(13, color);

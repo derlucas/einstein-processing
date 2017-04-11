@@ -30,7 +30,6 @@ public class CostumeWalter extends CostumeEberl {
 
     @Override
     void effect110cmLine(int color) {
-        effectSingleColor(0);
         setSegmentColor(2, color);
         setSegmentColor(12, color);
         setSegmentColor(13, color);
