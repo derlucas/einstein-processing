@@ -11,8 +11,18 @@ import java.util.List;
 
 public class Strips extends PApplet {
 
+    private final static int TRIAL1 = 1;
+    private final static int TRIAL2 = 2;
+    private final static int TRIAL3 = 3;
+    private final static int TRIAL4 = 4;
+    private final static int KNEE3 = 5;
+    private final static int TRIALPRI = 6;
+    private final static int TESTMODE = 7;
+    private static final String ORGAN2 = "/midi/MIDISPORT_2x2_Anniv_MIDI_1/0";
+    private static final String ORGAN1 = "/midi/Kurzweil_Forte_MIDI_1/5";
+
     private String addresses[] = {"192.168.80.121", "192.168.80.122", "192.168.80.123", "192.168.80.124",
-            "192.168.80.125", "192.168.80.133", "192.168.80.127", "192.168.80.128",
+            "192.168.80.125", "192.168.80.126", "192.168.80.127", "192.168.80.128",
             "192.168.80.129", "192.168.80.130", "192.168.80.131", "192.168.80.132"};
 
     private static int SENDDELAY = 40;
@@ -39,23 +49,37 @@ public class Strips extends PApplet {
     private long millisDataSend;
     private long millisAudioRender;
     private List<Costume> costumes = new ArrayList<>();
+    private List<Costume> costumesAlt = new ArrayList<>();
+    private List<Costume> costumesSopran = new ArrayList<>();
+    private List<Costume> costumesBass = new ArrayList<>();
+    private List<Costume> costumesTenor = new ArrayList<>();
     private boolean ampEnable = false;
     private boolean rgbEnable = false;
-    private boolean milaEnable = false;
-    private boolean milaFakeEnable = false;
-    private boolean knee3Enable = false;
-    private boolean trialEnable = false;
     private boolean midiEnable = true;
     private int effect110Value = -1;
     private int effect110Duration = 10;
     private int trialValue = -1;
     private int trialDuration = 10;
-    private float attack = 1.0f;
+    private int knee3Value = -1;
+    private int knee3Duration = 10;
     private float attackAudio = 1.0f;
-    private float release = 1.0f;
     private float releaseAudio = 1.0f;
     private Symbols trialSymbol = Symbols.OFF;
+    private Symbols knee3Symbol = Symbols.OFF;
     private int selectedEffect;
+    private Costume anna;
+    private Costume katharina;
+    private Costume ulrike;
+    private Costume luisa;
+    private Costume dominique;
+    private Costume johanna;
+    private Costume patrick;
+    private Costume fabian;
+    private Costume joerg;
+    private Costume michael;
+    private Costume christian;
+    private Costume julian;
+    int bang = 0;
 
     enum MiLaDo {
         MI,
@@ -74,21 +98,31 @@ public class Strips extends PApplet {
         oscP5 = new OscP5(this, 2002);
         cp5 = new ControlP5(this);
 
-        costumes.add(new CostumeMiklasherich(this, udp, addresses[0]));      // Anna Miklashevich
-        costumes.add(new CostumeEberl(this, udp, addresses[1]));             // Katharina Eberl
-        costumes.add(new CostumeHellermann(this, udp, addresses[2]));        // Ulrike Hellermann
-        costumes.add(new CostumeKruppa(this, udp, addresses[3]));            // Luisa Kruppa
-        costumes.add(new CostumeBilitza(this, udp, addresses[4]));           // Dominique Bilitza
-        costumes.add(new CostumeKroedel(this, udp, addresses[5]));           // Johanna Krödel
-        costumes.add(new CostumeBrandt(this, udp, addresses[6]));            // Patrick Brandt
-        costumes.add(new CostumeStrotmann(this, udp, addresses[7]));         // Fabian Strotmann
-        costumes.add(new CostumeDeutschewitz(this, udp, addresses[8]));      // Jörg Deutschewitz
-        costumes.add(new CostumeHofmeister(this, udp, addresses[9]));              // Michael Hofmeister
-        costumes.add(new CostumeWalter(this, udp, addresses[10]));           // Christian Walter
-        costumes.add(new CostumePopken(this, udp, addresses[11]));           // Julian Popken
+        anna = new CostumeAnna(this, udp, addresses[0]);                // Anna Miklashevich
+        katharina = new CostumeKatharina(this, udp, addresses[1]);      // Katharina Eberl
+        ulrike = new CostumeUlrike(this, udp, addresses[2]);            // Ulrike Hellermann
+        luisa = new CostumeLuisa(this, udp, addresses[3]);              // Luisa Kruppa
+        dominique = new CostumeDominique(this, udp, addresses[4]);      // Dominique Bilitza
+        johanna = new CostumeJohanna(this, udp, addresses[5]);          // Johanna Krödel
+        patrick = new CostumePatrick(this, udp, addresses[6]);          // Patrick Brandt
+        fabian = new CostumeFabian(this, udp, addresses[7]);            // Fabian Strotmann
+        joerg = new CostumeJoerg(this, udp, addresses[8]);              // Jörg Deutschewitz
+        michael = new CostumeMichael(this, udp, addresses[9]);          // Michael Hofmeister
+        christian = new CostumeChristian(this, udp, addresses[10]);     // Christian Walter
+        julian = new CostumeJulian(this, udp, addresses[11]);           // Julian Popken
+
+        costumes.add(anna); costumes.add(katharina); costumes.add(ulrike);
+        costumes.add(luisa); costumes.add(dominique); costumes.add(johanna);
+        costumes.add(patrick); costumes.add(fabian); costumes.add(joerg);
+        costumes.add(michael); costumes.add(christian); costumes.add(julian);
+
+        costumesSopran.add(anna); costumesSopran.add(katharina); costumesSopran.add(ulrike);
+        costumesAlt.add(luisa); costumesAlt.add(dominique); costumesAlt.add(johanna);
+        costumesTenor.add(patrick); costumesTenor.add(fabian); costumesTenor.add(joerg);
+        costumesBass.add(michael); costumesBass.add(christian); costumesBass.add(julian);
+
 
         for (int i = 0; i < COUNT; i++) {
-            //output[i] = false;
             cp5.addToggle("output" + i).setPosition(300 + i * 40, 70).setSize(30, 15).setId(i).setValue(false).setLabel("Pa " + (i + 1));
             for (int j = 0; j < 170; j++) {
                 outputColors[i][j] = 0;
@@ -98,16 +132,19 @@ public class Strips extends PApplet {
         int y = 10;
         cp5.addSlider("overallbrightness").setPosition(10, y).setSize(100, 20).setRange(0, 1.0f).setValue(0.5f);
         cp5.addSlider("preAmp").setPosition(10, y += 25).setSize(100, 20).setRange(0, 100.0f);
+        y+=10;
+        cp5.addSlider("attackAudio").setPosition(10, y += 25).setSize(100, 20).setRange(0.0f, 1.0f).setValue(1.0f);
+        cp5.addSlider("releaseAudio").setPosition(10, y += 25).setSize(100, 20).setRange(0.0f, 1.0f).setValue(1.0f);
+        y+=10;
         cp5.addSlider("redval").setPosition(10, y += 25).setSize(100, 20).setRange(0, 1.0f);
         cp5.addSlider("greenval").setPosition(10, y += 25).setSize(100, 20).setRange(0, 1.0f);
         cp5.addSlider("blueval").setPosition(10, y += 25).setSize(100, 20).setRange(0, 1.0f);
-        cp5.addSlider("attack").setPosition(10, y += 25).setSize(100, 20).setRange(0.0f, 1.0f).setValue(1.0f);
-        cp5.addSlider("release").setPosition(10, y += 25).setSize(100, 20).setRange(0.0f, 1.0f).setValue(1.0f);
+        y+=10;
         cp5.addSlider("ampMod").setPosition(10, y += 25).setSize(100, 20).setRange(0.0f, 1.0f).setValue(0.0f);
+        y+=10;
         cp5.addSlider("effect110Duration").setPosition(10, y += 25).setSize(100, 20).setRange(5, 100);
         cp5.addSlider("trialDuration").setPosition(10, y += 25).setSize(100, 20).setRange(5, 100);
-        cp5.addSlider("attackAudio").setPosition(10, y += 25).setSize(100, 20).setRange(0.0f, 1.0f).setValue(1.0f);
-        cp5.addSlider("releaseAudio").setPosition(10, y += 25).setSize(100, 20).setRange(0.0f, 1.0f).setValue(1.0f);
+        cp5.addSlider("knee3Duration").setPosition(10, y += 25).setSize(100, 20).setRange(5, 100);
 
         cp5.addToggle("blackout").setPosition(250, 70).setSize(30, 15).setId(12).setValue(false).setLabel("BO");
         cp5.addToggle("midiEnable").setPosition(210, 70).setSize(30, 15).setLabel("MIDI");
@@ -115,21 +152,16 @@ public class Strips extends PApplet {
         int x = 0;
         cp5.addToggle("rgbEnable").setPosition(300 + x++ * 40, 150).setSize(30, 15).setValue(false).setLabel("RGB");
         cp5.addToggle("ampEnable").setPosition(300 + x++ * 40, 150).setSize(30, 15).setValue(false).setLabel("AMP");
-//        cp5.addToggle("milaEnable").setPosition(300 + x++ * 40, 150).setSize(30, 15).setValue(false).setLabel("MILA");
-//        cp5.addToggle("milaFakeEnable").setPosition(300 + x++ * 40, 150).setSize(30, 15).setValue(false).setLabel("MILAFK");
-//        cp5.addToggle("knee3Enable").setPosition(300 + x++ * 40, 150).setSize(30, 15).setValue(false).setLabel("KNEE3");
-//        cp5.addToggle("trialEnable").setPosition(300 + x++ * 40, 150).setSize(30, 15).setValue(false).setLabel("TRIAL");
-//        cp5.addToggle("opt3").setPosition(300 + x++ * 40, 150).setSize(30, 15).setValue(false).setLabel("OPT3");
-        cp5.addRadioButton("effectRadio").setPosition(450, 150).setSize(30, 15).setColorForeground(color(120))
+        cp5.addRadioButton("effectRadio").setPosition(300, 250).setSize(30, 15).setColorForeground(color(120))
                 .setColorActive(color(255)).setColorLabel(color(255)).setItemsPerRow(10).setSpacingColumn(30)
-                .addItem("MILA1", 1)
-                .addItem("MILA2", 2)
-                .addItem("MILA3", 3)
-                .addItem("MILA4", 4)
-                .addItem("TRIAL", 5)
-                .addItem("KNEE3", 6)
-        ;
-
+                .addItem("TEST", TESTMODE)
+                .addItem("TRIAL1", TRIAL1)
+                .addItem("TRIAL2", TRIAL2)
+                .addItem("TRIAL3", TRIAL3)
+                .addItem("TRIAL4", TRIAL4)
+                .addItem("KNEE3", KNEE3)
+                .addItem("TRIALPRI", TRIALPRI)
+                .deactivateAll();
 
         x = 0;
         cp5.addBang("setBlack").setPosition(300 + x++ * 40, 190).setSize(30, 30).setLabel("BLK");
@@ -156,23 +188,12 @@ public class Strips extends PApplet {
     }
 
     public void setBlack() {
-        for (Costume costume : costumes) {
-            costume.effectSingleColor(0);
-        }
+        costumes.forEach(Costume::black);
     }
-
-//    public void milaEnable(boolean en) {
-//        if (this.milaEnable && !en) {
-//            for (Costume costume : costumes) {
-//                costume.effectSingleColor(0);
-//            }
-//        }
-//        this.milaEnable = en;
-//    }
 
     public void blackout(boolean bo) {
         if (this.blackout != bo) {
-            costumes.forEach(costume -> costume.blackout(bo));
+            setBlack();
         }
         this.blackout = bo;
     }
@@ -219,6 +240,9 @@ public class Strips extends PApplet {
 
         // send data via UDP
         sendOutputs();
+
+        fill(255);
+        text("bang: " + bang, 210, 50);
     }
 
     private void fadeAudio() {
@@ -266,7 +290,6 @@ public class Strips extends PApplet {
     private void renderEffect() {
 
         if (ampEnable) {
-
             for (int i = 0; i < costumes.size(); i++) {
                 float a = ampRendered[i];
                 Costume costume = costumes.get(i);
@@ -275,9 +298,6 @@ public class Strips extends PApplet {
                 brightness = brightness + a * ampMod;
                 costume.brightness(brightness * overallbrightness);
             }
-
-            //costumes.get(channel - 1).brightness(bright * overallbrightness);
-
         }
 
         //if (selectedEffect == 0) {  //amp
@@ -309,11 +329,30 @@ public class Strips extends PApplet {
             costumes.forEach(costume -> costume.effectSymbol(trialSymbol, color));
         }
 
+        if (knee3Value > 0) {
+            knee3Value--;
+            int color = color(255 * ((float) knee3Value / (float) knee3Duration));
+            costumes.forEach(costume -> costume.effectSymbol(knee3Symbol, color));
+        } else if (trialValue == 0) {
+            knee3Value--;
+            int color = color(0);
+            costumes.forEach(costume -> costume.effectSymbol(knee3Symbol, color));
+        }
+
 
     }
 
     public void keyPressed() {
-        if (selectedEffect == 1) {
+        if(selectedEffect == TESTMODE && key == '1') {
+            bang++;
+            bang %= SEGMENTS;
+            for (Costume costume: costumes) {
+                costume.black();
+                costume.setSegmentColor(bang, color(255));
+            }
+        }
+
+        if (selectedEffect == TRIAL1 || selectedEffect == TRIAL2 || selectedEffect == TRIAL3 || selectedEffect == TRIAL4) {
             if (key == 'm') {
                 for (Costume costume : costumes) {
                     costume.effectMI();
@@ -329,109 +368,190 @@ public class Strips extends PApplet {
             }
         }
 
-        if (selectedEffect == 6) {  // Knee3
+        if (selectedEffect == KNEE3) {  // Knee3
             if (key == '4') {
                 knee3(4);
             } else if (key == '3') {
                 knee3(3);
             } else if (key == '2') {
                 knee3(2);
+            } else if (key == '1') {
+                knee3(1);
+            } else {
+                setBlack();
             }
-        } else if (selectedEffect == 5) { // trial
+        } else if (selectedEffect == TRIALPRI) { // trial/prison
             switch (key) {
-                case '1':
-                    trial(Symbols.RIGHT);
-                    break;
-                case '2':
-                    trial(Symbols.LEFT);
-                    break;
-                case '3':
-                    trial(Symbols.BACKSLASH);
-                    break;
-                case '4':
-                    trial(Symbols.SLASH);
-                    break;
-                case '5':
-                    trial(Symbols.MINUS);
-                    break;
-                case '6':
-                    trial(Symbols.SUSPENDERS);
-                    break;
-                case '7':
-                    trial(Symbols.X);
-                    break;
-                case '8':
-                    trial(Symbols.UX);
-                    break;
-                case '9':
-                    trial(Symbols.OFF);
-                    break;
+                case '1': trial(Symbols.RIGHT); break;
+                case '2': trial(Symbols.LEFT); break;
+                case '3': trial(Symbols.BACKSLASH); break;
+                case '4': trial(Symbols.SLASH); break;
+                case '5': trial(Symbols.MINUS); break;
+                case '6': trial(Symbols.SUSPENDERS); break;
+                case '7': trial(Symbols.X); break;
+                case '8': trial(Symbols.UX); break;
+                case '9': trial(Symbols.OFF); break;
             }
         }
     }
 
     private void knee3(int num) {
-
         for (Costume costume : costumes) {
             costume.effectSingleColor(0);
         }
 
-        int color;
-
-        if (num == 2) {
-            color = color(0, 0, 255);
-            costumes.get(1).effectSymbol(Symbols.BACKSLASH, color);
-            costumes.get(2).effectSymbol(Symbols.BACKSLASH, color);
-            costumes.get(3).effectSymbol(Symbols.BACKSLASH, color);
-            costumes.get(4).effectSymbol(Symbols.BACKSLASH, color);
+        final int color = color(255);
+        if (num == 1) {
+            knee3Symbol = Symbols.UX;
+        } else if (num == 2) {
+            knee3Symbol = Symbols.BACKSLASH;
         } else if (num == 3) {
-            color = color(255, 0, 0);
-            costumes.get(6).effectSymbol(Symbols.SLASH, color);
-            costumes.get(0).effectSymbol(Symbols.SLASH, color);
-            costumes.get(5).effectSymbol(Symbols.SLASH, color);
-            costumes.get(9).effectSymbol(Symbols.SLASH, color);
+            knee3Symbol = Symbols.SLASH;
         } else if (num == 4) {
-            color = color(255, 255, 0);
-            costumes.get(7).effectSymbol(Symbols.X, color);
-            costumes.get(8).effectSymbol(Symbols.X, color);
-            costumes.get(10).effectSymbol(Symbols.X, color);
-            costumes.get(11).effectSymbol(Symbols.X, color);
+            knee3Symbol = Symbols.X;
         }
+
+        costumes.forEach(costume -> costume.effectSymbol(knee3Symbol, color));
+        knee3Value = knee3Duration;
     }
 
     private void mi(int milaNumber) {
         milaNumber %= 4;
-        if(milaNumber == 1) {
-            // Alt          MI MI
-            // Sopran       MI LA
+        if (milaNumber == 1) {
+            costumesSopran.forEach(Costume::effectMI);
+            costumesAlt.forEach(Costume::effectMI);
+            costumesBass.forEach(Costume::black);
+            costumesTenor.forEach(Costume::black);
+        } else if (milaNumber == 2) {
+            costumesAlt.forEach(Costume::black);
+            costumesSopran.forEach(Costume::black);
+        } else if(milaNumber == 3) {
+            costumesSopran.forEach(Costume::effectMI);
+            costumesAlt.forEach(Costume::effectMI);
+            costumesBass.forEach(Costume::effectDO);
+            costumesTenor.forEach(Costume::effectDO);
+        } else if(milaNumber == 4) {
+            costumesSopran.forEach(Costume::effectMI);
+            costumesAlt.forEach(Costume::effectMI);
+            costumesBass.forEach(Costume::effectDO);
+            costumesTenor.forEach(Costume::effectDO);
         }
-
     }
+
     private void la(int milaNumber) {
         milaNumber %= 4;
-
-    }
-    private void doo(int milaNumber) {
-        milaNumber %= 4;
-
-    }
-
-    private void alt(MiLaDo milado) {
-        if(milado == MiLaDo.MI) {
-            costumes.get(3).effectMI();
-            costumes.get(4).effectMI();
-            costumes.get(5).effectMI();
-        } else if(milado == MiLaDo.LA) {
-            costumes.get(3).effectLA();
-            costumes.get(4).effectLA();
-            costumes.get(5).effectLA();
-        } else if(milado == MiLaDo.DO) {
-            costumes.get(3).effectDO();
-            costumes.get(4).effectDO();
-            costumes.get(5).effectDO();
+        if (milaNumber == 1) {
+            costumesSopran.forEach(Costume::effectLA);
+            costumesAlt.forEach(Costume::effectMI);
+            costumesBass.forEach(Costume::black);
+            costumesTenor.forEach(Costume::black);
+        } else if (milaNumber == 2) {
+            costumesBass.forEach(Costume::effectLA);
+            costumesTenor.forEach(Costume::effectLA);
+        } else if(milaNumber == 3) {
+            costumesSopran.forEach(Costume::effectLA);
+            costumesAlt.forEach(Costume::effectMI);
+            costumesBass.forEach(Costume::effectLA);
+            costumesTenor.forEach(Costume::effectLA);
+        } else if(milaNumber == 4) {
+            costumesSopran.forEach(Costume::effectLA);
+            costumesAlt.forEach(Costume::effectMI);
+            costumesBass.forEach(Costume::effectLA);
+            costumesTenor.forEach(Costume::effectLA);
         }
     }
 
+    private void doo(int milaNumber) {
+        milaNumber %= 4;
+        if (milaNumber == 2) {
+            costumesBass.forEach(Costume::effectDO);
+            costumesTenor.forEach(Costume::effectDO);
+        } else if(milaNumber == 3) {
+
+        } else if(milaNumber == 4) {
+            costumesSopran.forEach(Costume::effectDO);
+            costumesAlt.forEach(Costume::effectLA);
+            costumesBass.forEach(Costume::black);
+            costumesTenor.forEach(Costume::black);
+        }
+    }
+
+
+    private void oscOrgel(OscMessage msg) {
+
+        if (!msg.checkAddrPattern(ORGAN1)) {
+            return;
+        }
+
+        if ("note_on".equals(msg.get(0).stringValue())) {
+            note = msg.get(1).intValue();
+            velocity = msg.get(2).intValue();
+            int noteModulo = note % 12;
+            int octave = note / 12;
+
+            System.out.println("midinote " + note + " modnote: " + noteModulo + " oct: " + octave + " vel: " + velocity);
+
+            if (selectedEffect == TRIAL1) {  // mi la do la  MILA1
+                if (noteModulo == 4 && octave == 4) {
+                    mi(selectedEffect);
+                } else if (noteModulo == 9 && octave == 4) {
+                    la(selectedEffect);
+                }
+            } else if(selectedEffect == TRIAL2) {
+                // gesteuert von Bjarne oder via Tonerkennung
+            } else if(selectedEffect == TRIAL3) {
+                if (noteModulo == 4 && octave == 4) {
+                    mi(selectedEffect);
+                } else if (noteModulo == 9 && octave == 4) {
+                    la(selectedEffect);
+                }
+            } else if(selectedEffect == TRIAL4) {
+                if (noteModulo == 4 && octave == 4) {
+                    mi(selectedEffect);
+                } else if (noteModulo == 9 && octave == 4) {
+                    la(selectedEffect);
+                } else if(noteModulo == 10 && octave == 5) {   // TODO note finden
+                    doo(selectedEffect);
+                }
+            }
+        }
+    }
+
+    private void oscBjarne(OscMessage msg) {
+        bjnote = msg.get(0).intValue();
+        bjvelocity = msg.get(1).intValue();
+//        System.out.println("bjmidi " + bjnote + " vel" + bjvelocity);
+        if (bjvelocity != 0) return;
+
+        if (bjnote == 33) {
+            flash110();
+        } else if (bjnote == 34) {
+            setBlack();
+        }
+
+        if (selectedEffect == KNEE3) {
+            switch (bjnote) {
+                case 80: knee3(4); break;
+                case 81: knee3(3); break;
+                case 82: knee3(2); break;
+                case 83: knee3(1); break;
+            }
+        }
+
+        if (selectedEffect == TRIALPRI) {
+            switch (bjnote) {
+                case 73: trial(Symbols.RIGHT); break;
+                case 74: trial(Symbols.LEFT); break;
+                case 75: trial(Symbols.BACKSLASH); break;
+                case 76: trial(Symbols.SLASH); break;
+                case 89: trial(Symbols.MINUS); break;
+                case 90: trial(Symbols.SUSPENDERS); break;
+                case 91: trial(Symbols.X); break;
+                case 92: trial(Symbols.UX); break;
+                default: trial(Symbols.OFF); break;
+            }
+        }
+    }
 
     void oscEvent(OscMessage msg) {
 
@@ -439,108 +559,29 @@ public class Strips extends PApplet {
 
         if (addr.startsWith("amp")) {
             int channel = Integer.parseInt(addr.substring(3));
-
             float newAmpValue = msg.get(0).floatValue() * preAmp;
             amp[channel - 1] = newAmpValue;
         } else if (addr.startsWith("freq")) {
             int channel = Integer.parseInt(addr.substring(4));
             float m = msg.get(0).floatValue();
-
 //            System.out.println("freq " + channel + "  f:" + m);
 
             if (channel == 10) {    // Michael Hofmeister
-                if (selectedEffect == 2) {  // mi la do la  MILA2
-                    if (m == 74) { // do
-                        costumes.forEach(Costume::effectDO);
-                    } else if (m == 53) { // la
-                        costumes.forEach(Costume::effectLA);
+                if (selectedEffect == TRIAL2) {  // mi la do la  MILA2
+                    System.out.println("hofmeister: " + m);
+
+                    if (m <= 52) { // do    // gesang war 47-48
+                        doo(selectedEffect);
+                    } else if (m > 52) { // la   // gesang war 56-57
+                        la(selectedEffect);
                     }
                 }
             }
 
-        } else if (msg.checkAddrPattern("/midinote") && midiEnable) {
-            note = msg.get(0).intValue();
-            //velocity = msg.get(1).intValue();
-            int noteModulo = note % 12;
-            int octave = note / 12;
-
-            System.out.println("midinote " + note + " modnote: " + noteModulo + "oct: " + octave + " vel: " + velocity);
-
-
-            if (selectedEffect == 0 && octave == 4) {  // mi la do la  MILA1
-                if (noteModulo == 9) { // la
-                    costumes.forEach(Costume::effectLA);
-                } else if (noteModulo == 4) { // mi
-                    costumes.forEach(Costume::effectMI);
-//                    } else if (noteModulo == 0) { // do
-//                        costumes.forEach(Costume::effectDO);
-                }
-
-            }
-
+        } else if ((msg.checkAddrPattern(ORGAN1) || msg.checkAddrPattern(ORGAN2)) && midiEnable) {
+            oscOrgel(msg);
         } else if (msg.checkAddrPattern("/bjmidi") && midiEnable) {
-            bjnote = msg.get(0).intValue();
-            bjvelocity = msg.get(1).intValue();
-            System.out.println("bjmidi " + bjnote);
-
-            if (bjnote == 33 && bjvelocity != 0) {
-                flash110();
-            }
-
-            if (selectedEffect == 6 && bjvelocity != 0) {
-                switch (bjnote) {
-                    case 25:
-                    case 28:
-                    case 31:
-                        // 4
-                        knee3(4);
-                        break;
-                    case 26:
-                    case 29:
-                    case 32:
-                        // 3
-                        knee3(3);
-                        break;
-                    case 27:
-                    case 30:
-                        // 2
-                        knee3(2);
-                        break;
-                }
-
-            }
-
-            if (trialEnable && bjvelocity != 0) {
-                switch (bjnote) {
-                    case 73:
-                        trial(Symbols.RIGHT);
-                        break;
-                    case 74:
-                        trial(Symbols.LEFT);
-                        break;
-                    case 75:
-                        trial(Symbols.BACKSLASH);
-                        break;
-                    case 76:
-                        trial(Symbols.SLASH);
-                        break;
-                    case 89:
-                        trial(Symbols.MINUS);
-                        break;
-                    case 90:
-                        trial(Symbols.SUSPENDERS);
-                        break;
-                    case 91:
-                        trial(Symbols.X);
-                        break;
-                    case 92:
-                        trial(Symbols.UX);
-                        break;
-                    default:
-                        trial(Symbols.OFF);
-                        break;
-                }
-            }
+            oscBjarne(msg);
         }
     }
 
@@ -548,8 +589,7 @@ public class Strips extends PApplet {
         if (theEvent.isController()) {
             if (theEvent.getName().startsWith("output")) {
                 int id = theEvent.getId();
-                if (id >= 0 && id < COUNT) {
-                    //output[id] = theEvent.getValue() > 0;
+                if (id >= 0 && id < COUNT && costumes.get(id) != null) {
                     costumes.get(id).setEnabled(theEvent.getValue() > 0);
                 }
             } else if (theEvent.getName().startsWith("attack")) {
@@ -561,9 +601,7 @@ public class Strips extends PApplet {
                     costume.release(theEvent.getValue());
                 }
             } else if (theEvent.getName().startsWith("overallbrightness")) {
-
                 costumes.forEach(costume -> costume.brightness(theEvent.getValue()));
-
             }
         }
 
@@ -571,7 +609,7 @@ public class Strips extends PApplet {
         if (theEvent.getName().startsWith("effectRadio")) {
             selectedEffect = (int) theEvent.getValue();
             System.out.println("effect: " + selectedEffect);
-
+            setBlack();
         }
     }
 

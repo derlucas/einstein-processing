@@ -4,14 +4,12 @@ import processing.core.PApplet;
 public class CostumeDemo extends Costume {
 
     CostumeDemo(PApplet base, UDP udp, String ipAddress) {
-        super(base, udp, ipAddress);
-        setLedCount(170);
-        segmentation = new int[][]{
-            {35, 64}, {100, 129}, {130, 149}, {156, 163},
-            {76, 81}, {11, 16}, {18, 34}, {83, 99},
-            {150, 155}, {164, 169}, {65, 74}, {0, 9},
-            {82, 82}
-        };
+        super(base, udp, ipAddress, new int[][]{
+                {35, 64}, {100, 129}, {130, 149}, {156, 163},
+                {76, 81}, {11, 16}, {18, 34}, {83, 99},
+                {150, 155}, {164, 169}, {65, 74}, {0, 9},
+                {82, 82}
+        }, 170);
     }
 
     void setSegmentColor(int segment, int color) {

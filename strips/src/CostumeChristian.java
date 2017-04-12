@@ -1,12 +1,10 @@
 import hypermedia.net.UDP;
 import processing.core.PApplet;
 
-public class CostumeWalter extends CostumeEberl {
+public class CostumeChristian extends Costume {
 
-    CostumeWalter(PApplet base, UDP udp, String ipAddress) {
-        super(base, udp, ipAddress);
-        setLedCount(183);
-        segmentation = new int[][]{
+    CostumeChristian(PApplet base, UDP udp, String ipAddress) {
+        super(base, udp, ipAddress, new int[][]{
                 {31, 52},
                 {91, 112},
                 {128, 143},
@@ -25,7 +23,7 @@ public class CostumeWalter extends CostumeEberl {
                 {0, 6},
                 {54, 59},
                 {114, 119},
-        };
+        }, 183);
     }
 
     @Override

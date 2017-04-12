@@ -17,19 +17,15 @@ public abstract class Costume {
     float release = 1.0f;
     private long fadetimer;
 
-    Costume(PApplet base, UDP udp, String ipAddress) {
+    Costume(PApplet base, UDP udp, String ipAddress, int segmentation[][], int ledsCount) {
         this.base = base;
         this.ipAddress = ipAddress;
         this.udp = udp;
-        for (int led = 0; led < ledsCount; led++) {
-            for (int color = 0; color < 3; color++) {
-                setRGB[led][color] = 0;
-                outputRGB[led][color] = 0;
-            }
-        }
+        setLedCount(ledsCount);
+        this.segmentation = segmentation;
     }
 
-    void setLedCount(int count) {
+    private void setLedCount(int count) {
         this.ledsCount = count;
         outputRGB = new float[ledsCount][3];
         setRGB = new float[ledsCount][3];
@@ -162,6 +158,10 @@ public abstract class Costume {
                 }
             }
         }
+    }
+
+    void black() {
+        effectSingleColor(0);
     }
 
     void effectMI() {

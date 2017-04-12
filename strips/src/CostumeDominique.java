@@ -1,12 +1,10 @@
 import hypermedia.net.UDP;
 import processing.core.PApplet;
 
-public class CostumeBilitza extends CostumeEberl {
+public class CostumeDominique extends Costume {
 
-    CostumeBilitza(PApplet base, UDP udp, String ipAddress) {
-        super(base, udp, ipAddress);
-        setLedCount(162);
-        segmentation = new int[][]{
+    CostumeDominique(PApplet base, UDP udp, String ipAddress) {
+        super(base, udp, ipAddress, new int[][]{
                 {30, 51},
                 {89, 110},
                 {124, 136},
@@ -25,6 +23,6 @@ public class CostumeBilitza extends CostumeEberl {
                 {0, 4},
                 {53, 58},
                 {112, 117},
-        };
+        }, 162);
     }
 }
