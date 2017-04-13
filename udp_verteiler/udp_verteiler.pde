@@ -30,15 +30,7 @@ void setup() {
 void receive( byte[] data, String ip, int port ) {
   data = subset(data, 0, data.length);
   String message = new String( data );
-  
-  if(message.startsWith("/freq")) {
- 
-  }
-  
-  if(message.startsWith("/amp")) {
-    //udp.send(data,"192.168.79.28", 4210);
-  }
-  
+    
   if(output0) udp.send(data, "127.0.0.1", port0);
   if(output1) udp.send(data, "127.0.0.1", port1);
   if(output2) udp.send(data, "127.0.0.1", port2);
