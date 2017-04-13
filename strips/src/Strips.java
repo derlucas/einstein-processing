@@ -17,17 +17,23 @@ public class Strips extends PApplet {
     private final static int TRIAL1 = 1;
     private final static int TRIAL2 = 2;
     private final static int TRIAL3 = 3;
-    private final static int TRIAL4 = 4;
     private final static int KNEE3 = 5;
     private final static int TRIALPRI = 6;
     private final static int TESTMODE = 7;
     private final static int KNEE3ON = 8;
+    private final static int DANCE2 = 9;
+    private final static int KNEE4 = 10;
+    private final static int BUILDING = 11;
     private static final String ORGAN2 = "/midi/MIDISPORT_2x2_Anniv_MIDI_1/0";
     private static final String ORGAN1 = "/midi/MIDISPORT_2x2_Anniv_MIDI_2/5";
 
     private String addresses[] = {"192.168.80.121", "192.168.80.122", "192.168.80.123", "192.168.80.124",
             "192.168.80.125", "192.168.80.126", "192.168.80.127", "192.168.80.128",
             "192.168.80.129", "192.168.80.130", "192.168.80.131", "192.168.80.132"};
+
+    private String addressesPanzer[] = {"192.168.80.101", "192.168.80.102", "192.168.80.103", "192.168.80.104",
+            "192.168.80.105", "192.168.80.106", "192.168.80.107", "192.168.80.108",
+            "192.168.80.109", "192.168.80.110", "192.168.80.111", "192.168.80.112"};
 
     private static int SENDDELAY = 40;
     static final int COUNT = 12;
@@ -83,16 +89,13 @@ public class Strips extends PApplet {
     private Costume julian;
     int bang = 0;
     private MidiBus midi;
-    Slider sldrOverallBrightness;
-    Slider sldrAttackAudio;
-    Slider sldrReleaseAudio;
-    RadioButton effectRadio;
-
-    enum MiLaDo {
-        MI,
-        LA,
-        DO
-    }
+    private Slider sldrOverallBrightness;
+    private Slider sldrAttackAudio;
+    private Slider sldrReleaseAudio;
+    private Slider sldrAmpMod;
+    private Slider sldrEffectDuration;
+    private RadioButton effectRadio;
+    private boolean midiDebug;
 
     public void settings() {
         size(800, 600);
@@ -101,6 +104,7 @@ public class Strips extends PApplet {
     public void setup() {
         frameRate(60);
 
+        MidiBus.list();
 
         udp = new UDP(this, 2102);
         oscP5 = new OscP5(this, 2002);
@@ -148,13 +152,14 @@ public class Strips extends PApplet {
         cp5.addSlider("greenval").setPosition(10, y += 25).setSize(100, 20).setRange(0, 1.0f);
         cp5.addSlider("blueval").setPosition(10, y += 25).setSize(100, 20).setRange(0, 1.0f);
         y += 10;
-        cp5.addSlider("ampMod").setPosition(10, y += 25).setSize(100, 20).setRange(0.0f, 1.0f).setValue(0.0f);
+        sldrAmpMod = cp5.addSlider("ampMod").setPosition(10, y += 25).setSize(100, 20).setRange(0.0f, 1.0f).setValue(0.0f);
         y += 10;
         cp5.addSlider("effect110Duration").setPosition(10, y += 25).setSize(100, 20).setRange(5, 100);
-        cp5.addSlider("effectFadeDuration").setPosition(10, y += 25).setSize(100, 20).setRange(5, 100);
+        sldrEffectDuration = cp5.addSlider("effectFadeDuration").setPosition(10, y += 25).setSize(100, 20).setRange(1, 200);
 
         cp5.addToggle("blackout").setPosition(250, 70).setSize(30, 15).setId(12).setValue(false).setLabel("BO");
         cp5.addToggle("midiEnable").setPosition(210, 70).setSize(30, 15).setLabel("MIDI");
+        cp5.addToggle("midiDebug").setPosition(210, 110).setSize(30, 15).setId(12).setValue(false).setLabel("MIDI DBG");
 
         int x = 0;
         cp5.addToggle("rgbEnable").setPosition(300 + x++ * 40, 150).setSize(30, 15).setValue(false).setLabel("RGB");
@@ -165,11 +170,12 @@ public class Strips extends PApplet {
                 .addItem("TRIAL1", TRIAL1)
                 .addItem("TRIAL2", TRIAL2)
                 .addItem("TRIAL3", TRIAL3)
-                .addItem("TRIAL4", TRIAL4)
-                .addItem(" ", 99)
+                .addItem("DANCE2", DANCE2)
+                .addItem("KNEE4", KNEE4)
                 .addItem("KNEE3", KNEE3)
                 .addItem("KNEE3ON", KNEE3ON)
                 .addItem("TRIALPRI", TRIALPRI)
+                .addItem("BUILDING", BUILDING)
                 .deactivateAll();
 
         x = 0;
@@ -177,9 +183,9 @@ public class Strips extends PApplet {
         cp5.addBang("flash110").setPosition(300 + x++ * 40, 190).setSize(30, 30).setLabel("F110");
 
 
-        midi = new MidiBus(this, 0, 0); // Create a new MidiBus object
+        midi = new MidiBus(this, 0, 1); // this,input,outputdev
 
-        surface.setTitle("STRIP CONTROLLER");
+        surface.setTitle("Costumes");
     }
 
     public void flash110() {
@@ -335,16 +341,15 @@ public class Strips extends PApplet {
         if (effectFadeValue > 0) {
             effectFadeValue--;
             int color = color(255 * ((float) effectFadeValue / (float) effectFadeDuration));
-            if(selectedEffect == TRIALPRI) {
+            if (selectedEffect == TRIALPRI) {
                 costumes.forEach(costume -> costume.effectSymbol(trialSymbol, color));
-            }
-            else if(selectedEffect == KNEE3) {
+            } else if (selectedEffect == KNEE3) {
                 costumes.forEach(costume -> costume.effectSymbol(knee3Symbol, color));
             }
         } else if (effectFadeValue == 0) {
             effectFadeValue--;
             int color = color(0);
-            if(selectedEffect == TRIALPRI | selectedEffect == KNEE3) {
+            if (selectedEffect == TRIALPRI | selectedEffect == KNEE3) {
                 costumes.forEach(costume -> costume.effectSymbol(trialSymbol, color));
             }
         }
@@ -360,19 +365,14 @@ public class Strips extends PApplet {
             }
         }
 
-        if (selectedEffect == TRIAL1 || selectedEffect == TRIAL2 || selectedEffect == TRIAL3 || selectedEffect == TRIAL4) {
+        if (selectedEffect == TRIAL1 || selectedEffect == TRIAL2 || selectedEffect == TRIAL3) {
             if (key == 'm') {
-                for (Costume costume : costumes) {
-                    costume.effectMI();
-                }
+                mi(selectedEffect, false);
             } else if (key == 'l') {
-                for (Costume costume : costumes) {
-                    costume.effectLA();
-                }
+                la(selectedEffect, false);
             } else if (key == 'd') {
-                for (Costume costume : costumes) {
-                    costume.effectDO();
-                }
+                doo(selectedEffect, false);
+
             }
         }
 
@@ -423,62 +423,50 @@ public class Strips extends PApplet {
         effectFadeValue = effectFadeDuration;
     }
 
-    private void mi(int milaNumber) {
+    private void mi(int milaNumber, boolean off) {
         milaNumber %= 4;
-        if (milaNumber == 1) {
-            costumesSopran.forEach(Costume::effectMI);
-            costumesAlt.forEach(Costume::effectMI);
-            costumesBass.forEach(Costume::black);
-            costumesTenor.forEach(Costume::black);
-        } else if (milaNumber == 2) {
+        if (milaNumber == TRIAL1) {
+            costumesSopran.forEach(off ? Costume::black : Costume::effectMI);
+            costumesAlt.forEach(off ? Costume::black : Costume::effectMI);
+            costumesBass.forEach(off ? Costume::black : Costume::black);
+            costumesTenor.forEach(off ? Costume::black : Costume::black);
+        } else if (milaNumber == TRIAL2) {
             costumesAlt.forEach(Costume::black);
             costumesSopran.forEach(Costume::black);
-        } else if (milaNumber == 3) {
-            costumesSopran.forEach(Costume::effectMI);
-            costumesAlt.forEach(Costume::effectMI);
-            costumesBass.forEach(Costume::effectDO);
-            costumesTenor.forEach(Costume::effectDO);
-        } else if (milaNumber == 4) {
-            costumesSopran.forEach(Costume::effectMI);
-            costumesAlt.forEach(Costume::effectMI);
-            costumesBass.forEach(Costume::effectDO);
-            costumesTenor.forEach(Costume::effectDO);
+        } else if (milaNumber == TRIAL3) {
+            costumesSopran.forEach(off ? Costume::black : Costume::effectMI);
+            costumesAlt.forEach(off ? Costume::black : Costume::effectMI);
+            costumesBass.forEach(off ? Costume::black : Costume::effectDO);
+            costumesTenor.forEach(off ? Costume::black : Costume::effectDO);
         }
     }
 
-    private void la(int milaNumber) {
+    private void la(int milaNumber, boolean off) {
         milaNumber %= 4;
-        if (milaNumber == 1) {
-            costumesSopran.forEach(Costume::effectLA);
-            costumesAlt.forEach(Costume::effectMI);
+        if (milaNumber == TRIAL1) {
+            costumesSopran.forEach(off ? Costume::black : Costume::effectLA);
+            costumesAlt.forEach(off ? Costume::black : Costume::effectMI);
             costumesBass.forEach(Costume::black);
             costumesTenor.forEach(Costume::black);
-        } else if (milaNumber == 2) {
-            costumesBass.forEach(Costume::effectLA);
-            costumesTenor.forEach(Costume::effectLA);
-        } else if (milaNumber == 3) {
-            costumesSopran.forEach(Costume::effectLA);
-            costumesAlt.forEach(Costume::effectMI);
-            costumesBass.forEach(Costume::effectLA);
-            costumesTenor.forEach(Costume::effectLA);
-        } else if (milaNumber == 4) {
-            costumesSopran.forEach(Costume::effectLA);
-            costumesAlt.forEach(Costume::effectMI);
-            costumesBass.forEach(Costume::effectLA);
-            costumesTenor.forEach(Costume::effectLA);
+        } else if (milaNumber == TRIAL2) {
+            costumesBass.forEach(off ? Costume::black : Costume::effectLA);
+            costumesTenor.forEach(off ? Costume::black : Costume::effectLA);
+        } else if (milaNumber == TRIAL3) {
+            costumesSopran.forEach(off ? Costume::black : Costume::effectLA);
+            costumesAlt.forEach(off ? Costume::black : Costume::effectMI);
+            costumesBass.forEach(off ? Costume::black : Costume::effectLA);
+            costumesTenor.forEach(off ? Costume::black : Costume::effectLA);
         }
     }
 
-    private void doo(int milaNumber) {
+    private void doo(int milaNumber, boolean off) {
         milaNumber %= 4;
-        if (milaNumber == 2) {
-            costumesBass.forEach(Costume::effectDO);
-            costumesTenor.forEach(Costume::effectDO);
-        } else if (milaNumber == 3) {
-
-        } else if (milaNumber == 4) {
-            costumesSopran.forEach(Costume::effectDO);
-            costumesAlt.forEach(Costume::effectLA);
+        if (milaNumber == TRIAL2) {
+            costumesBass.forEach(off ? Costume::black : Costume::effectDO);
+            costumesTenor.forEach(off ? Costume::black : Costume::effectDO);
+        } else if (milaNumber == TRIAL3) {
+            costumesSopran.forEach(off ? Costume::black : Costume::effectDO);
+            costumesAlt.forEach(off ? Costume::black : Costume::effectLA);
             costumesBass.forEach(Costume::black);
             costumesTenor.forEach(Costume::black);
         }
@@ -491,53 +479,50 @@ public class Strips extends PApplet {
             return;
         }
 
-        if ("note_on".equals(msg.get(0).stringValue())) {
-            note = msg.get(1).intValue();
-            velocity = msg.get(2).intValue();
-            int noteModulo = note % 12;
-            int octave = note / 12;
+        boolean noteOn = "note_on".equals(msg.get(0).stringValue());
 
-            //System.out.println("organ " + note + " modnote: " + noteModulo + " oct: " + octave + " vel: " + velocity);
+        note = msg.get(1).intValue();
+        velocity = msg.get(2).intValue();
+        int noteModulo = note % 12;
+        int octave = note / 12;
 
-            if (selectedEffect == TRIAL1) {  // mi la do la  MILA1
-                if (noteModulo == 4 && octave == 6) {
-                    mi(selectedEffect);
-                } else if (noteModulo == 0 && octave == 6) {
-                    la(selectedEffect);
-                }
-            } else if (selectedEffect == TRIAL2) {
-                // gesteuert von Bjarne oder via Tonerkennung
-            } else if (selectedEffect == TRIAL3) {
-                if (noteModulo == 5 && octave == 5) {   // 65
-                    mi(selectedEffect);
-                } else if (noteModulo == 0 && octave == 6) {    // 72
-                    la(selectedEffect);
-                }
-            } else if (selectedEffect == TRIAL4) {
-                if (noteModulo == 5 && octave == 5) {
-                    mi(selectedEffect);
-                } else if (noteModulo == 7 && octave == 6) {
-                    la(selectedEffect);
-                } else if (noteModulo == 9 && octave == 5) {   // TODO note finden
-                    doo(selectedEffect);
-                }
+        if (midiDebug)
+            System.out.println("organ " + note + " modnote: " + noteModulo + " oct: " + octave + " vel: " + velocity);
+
+        /*if (selectedEffect == TRIAL1) {  // mi la do la  MILA1
+            if (noteModulo == 4 && octave == 5) {
+                mi(selectedEffect, !noteOn);
+            } else if (noteModulo == 4 && octave == 5) {
+                la(selectedEffect, !noteOn);
             }
-        }
+        } else if (selectedEffect == TRIAL2) {
+            // gesteuert von Bjarne oder via Tonerkennung
+
+        } else if (selectedEffect == TRIAL3) {
+            if (noteModulo == 4 && octave == 5) {   // 65
+                mi(selectedEffect, !noteOn);
+            } else if (noteModulo == 4 && octave == 5) {    // 72
+                la(selectedEffect, !noteOn);
+            } else if (noteModulo == 9 && octave == 5) {   // TODO note finden
+                doo(selectedEffect, !noteOn);
+            }
+        } */
+
     }
 
     private void oscBjarne(OscMessage msg) {
         bjnote = msg.get(0).intValue();
         bjvelocity = msg.get(1).intValue();
-//        System.out.println("bjmidi " + bjnote + " vel" + bjvelocity);
-        if (bjvelocity != 0) return;
+        if (midiDebug) System.out.println("bjmidi " + bjnote + " vel:" + bjvelocity);
 
-        if (bjnote == 35) {
+        if (bjnote == 35 && bjvelocity == 0) {
             flash110();
-        } else if (bjnote == 34) {
+        } else if (bjnote == 34 && bjvelocity == 0) {
             setBlack();
         }
 
-        if (selectedEffect == KNEE3 || selectedEffect == KNEE3ON) {
+
+        if (bjvelocity == 0 && selectedEffect == KNEE3 || selectedEffect == KNEE3ON) {
             switch (bjnote) {
                 case 80: knee3(4); break;
                 case 81: knee3(3); break;
@@ -546,14 +531,15 @@ public class Strips extends PApplet {
             }
         }
 
-        if(selectedEffect == TRIAL2) { // Bjarne Fake DO LA
+        if (selectedEffect == TRIAL2 || selectedEffect == TRIAL1 || selectedEffect == TRIAL3) { // Bjarne Fake DO LA
             switch (bjnote) {
-                case 40: doo(selectedEffect); break;
-                case 41: la(selectedEffect); break;
+                case 40: doo(selectedEffect, bjvelocity == 0); break;
+                case 41: la(selectedEffect, bjvelocity == 0); break;
+                case 42: mi(selectedEffect, bjvelocity == 0); break;
             }
         }
 
-        if (selectedEffect == TRIALPRI) {
+        if (bjvelocity == 0 && selectedEffect == TRIALPRI) {
             switch (bjnote) {
                 case 73: trialPrison(Symbols.RIGHT); break;
                 case 74: trialPrison(Symbols.LEFT); break;
@@ -622,9 +608,26 @@ public class Strips extends PApplet {
 
 
         if (theEvent.getName().startsWith("effectRadio")) {
+
             selectedEffect = (int) theEvent.getValue();
-            System.out.println("effect: " + selectedEffect);
             setBlack();
+
+            if (midi != null) { // zurückschalten der Midi Pads wenn man die Radio Buttons drückt
+                for (int i = 36; i < 52; i++) {
+                    midi.sendNoteOff(9, i, 0);
+                }
+                switch (selectedEffect) {
+                    case TRIAL1: midi.sendNoteOn(9, 48, 10); break;
+                    case TRIAL2: midi.sendNoteOn(9, 49, 10); break;
+                    case TRIAL3: midi.sendNoteOn(9, 50, 10); break;
+                    case DANCE2: midi.sendNoteOn(9, 51, 10); break;
+                    case KNEE3: midi.sendNoteOn(9, 44, 10); break;
+                    case KNEE3ON: midi.sendNoteOn(9, 45, 10); break;
+                    case TRIALPRI: midi.sendNoteOn(9, 46, 10); break;
+                    case BUILDING: midi.sendNoteOn(9, 47, 10); break;
+                    case KNEE4: midi.sendNoteOn(9, 40, 10); break;
+                }
+            }
         }
     }
 
@@ -634,27 +637,37 @@ public class Strips extends PApplet {
         print(" Pitch:" + pitch);
         println(" Velocity:" + velocity);
 
-        if(pitch == 36) {
-            setBlack();
-        } else if(pitch == 37) {        //nofx
-            effectRadio.deactivateAll();
-        } else if(pitch == 44) {
-            effectRadio.activate(6);    //knee3
-        } else if(pitch == 45) {
-            effectRadio.activate(7);    //knee3on
-        } else if(pitch == 46) {
-            effectRadio.activate(8);    //trialprison
-        } else if(pitch == 47) {
-            //effectRadio.activate(TRIAL1);
-        } else if(pitch == 48) {
-            effectRadio.activate(1); //trial1
-        } else if(pitch == 49) {
-            effectRadio.activate(2);//trial1
-        } else if(pitch == 50) {
-            effectRadio.activate(3);//trial1
-        } else if(pitch == 51) {
-            effectRadio.activate(4);//trial1
+        switch (pitch) {
+            case 36: setBlack(); break;
+            case 37: effectRadio.deactivateAll(); break;
+            case 38: ; break;
+            case 39: ; break;
+            case 40: effectRadio.activate(5); break;
+            case 41: ; break;
+            case 42: ; break;
+            case 43: ; break;
+            case 44: effectRadio.activate(6); break;   //knee3
+            case 45: effectRadio.activate(7); break;   //knee3on
+            case 46: effectRadio.activate(8); break;   //trialprison
+            case 47: effectRadio.activate(9); break;
+            case 48: effectRadio.activate(1); break;  //trial1
+            case 49: effectRadio.activate(2); break;  //trial2
+            case 50: effectRadio.activate(3); break;  //trial3
+            case 51: effectRadio.activate(4); break;  //dance2
         }
+    }
+
+    public void noteOff(int channel, int pitch, int velocity) {
+
+
+        if (pitch >= 40 && pitch <= 51) {
+            for (int i = 40; i <= 51; i++) {
+                midi.sendNoteOff(9, i, 0);
+            }
+
+            midi.sendNoteOn(9, pitch, 10);
+        }
+
     }
 
     public void controllerChange(int channel, int number, int value) {
@@ -665,6 +678,10 @@ public class Strips extends PApplet {
 
         if (number == 3) {
             sldrOverallBrightness.setValue(value / 127.0f);
+        } else if (number == 12) {
+            sldrAmpMod.setValue(value / 127.0f);
+        } else if (number == 13) {
+            sldrEffectDuration.setValue(map(value, 0, 127, 1, 200));
         } else if (number == 14) {
             sldrAttackAudio.setValue(value / 127.0f);
         } else if (number == 15) {
