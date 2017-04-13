@@ -247,7 +247,6 @@ public class MainWindow extends PApplet {
         // draw costumes
         int i = 0;
         for (Costume costume : costumes) {
-            costume.render();
 
             pushMatrix();
             translate(10 + i * 65, 400);
@@ -592,14 +591,6 @@ public class MainWindow extends PApplet {
                 int id = theEvent.getId();
                 if (id >= 0 && id < COUNT && costumes.get(id) != null) {
                     costumes.get(id).setEnabled(theEvent.getValue() > 0);
-                }
-            } else if (theEvent.getName().startsWith("attack")) {
-                for (Costume costume : costumes) {
-                    costume.attack(theEvent.getValue());
-                }
-            } else if (theEvent.getName().startsWith("release")) {
-                for (Costume costume : costumes) {
-                    costume.release(theEvent.getValue());
                 }
             } else if (theEvent.getName().startsWith("overallbrightness")) {
                 costumes.forEach(costume -> costume.brightness(theEvent.getValue()));

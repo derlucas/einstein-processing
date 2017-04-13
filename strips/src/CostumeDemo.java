@@ -49,7 +49,7 @@ public class CostumeDemo extends Costume {
     }
 
     void effectSingleColor(int color) {
-        for (int i = 0; i < Strips.SEGMENTS; i++) {
+        for (int i = 0; i < MainWindow.SEGMENTS; i++) {
             setSegmentColor(i, color);
         }
     }

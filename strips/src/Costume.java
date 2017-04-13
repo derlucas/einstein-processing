@@ -9,12 +9,9 @@ public abstract class Costume {
     final UDP udp;
     int ledsCount;
     float outputRGB[][];
-    float setRGB[][];
     boolean enableOutput = false;
     float brightness = 1.0f;
     boolean blackout = false;
-    float attack = 1.0f;
-    float release = 1.0f;
     private long fadetimer;
 
     Costume(PApplet base, UDP udp, String ipAddress, int segmentation[][], int ledsCount) {
@@ -28,19 +25,17 @@ public abstract class Costume {
     private void setLedCount(int count) {
         this.ledsCount = count;
         outputRGB = new float[ledsCount][3];
-        setRGB = new float[ledsCount][3];
         for (int led = 0; led < ledsCount; led++) {
             for (int color = 0; color < 3; color++) {
-                setRGB[led][color] = 0;
                 outputRGB[led][color] = 0;
             }
         }
     }
 
     void setLedColor(int led, int color) {
-        setRGB[led][0] = base.red(color) / 255.0f;
-        setRGB[led][1] = base.green(color) / 255.0f;
-        setRGB[led][2] = base.blue(color) / 255.0f;
+        outputRGB[led][0] = base.red(color) / 255.0f;
+        outputRGB[led][1] = base.green(color) / 255.0f;
+        outputRGB[led][2] = base.blue(color) / 255.0f;
     }
 
     void display() {
@@ -84,13 +79,6 @@ public abstract class Costume {
         this.blackout = bo;
     }
 
-    void attack(float attack) {
-        this.attack = attack;
-    }
-
-    void release(float release) {
-        this.release = release;
-    }
 
     void send() {
         if (!enableOutput) {
@@ -118,46 +106,6 @@ public abstract class Costume {
         }
 
         udp.send(buffer, ipAddress, 4210);
-    }
-
-    void render() {
-        //TODO: attack und release raus nehmen, wird eh nicht mehr verwendet
-        if (attack >= 0.99f && release >= 0.99f) {
-            // direct switching
-            for (int led = 0; led < ledsCount; led++) {
-                for (int color = 0; color < 3; color++) {
-                    outputRGB[led][color] = setRGB[led][color];
-                }
-            }
-        }
-        else if (base.millis() - fadetimer > 10) {
-            fadedelta();
-            fadetimer = base.millis();
-        }
-    }
-
-    private void fadedelta() {
-        for (int i = 0; i < ledsCount; i++) {
-            for (int color = 0; color < 3; color++) {
-
-                float diff = outputRGB[i][color] - setRGB[i][color];
-
-                if (Math.abs(diff) > 0.001) {
-                    if (diff > 0.0) {
-                        outputRGB[i][color] -= diff * release;
-                        if (outputRGB[i][color] > 1.0f) {
-                            outputRGB[i][color] = 1.0f;
-                        }
-                    }
-                    else {
-                        outputRGB[i][color] -= diff * attack;
-                        if (outputRGB[i][color] < 0.0f) {
-                            outputRGB[i][color] = 0.0f;
-                        }
-                    }
-                }
-            }
-        }
     }
 
     void black() {
