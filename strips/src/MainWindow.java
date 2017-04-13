@@ -12,7 +12,7 @@ import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Strips extends PApplet {
+public class MainWindow extends PApplet {
 
     private final static int TRIAL1 = 1;
     private final static int TRIAL2 = 2;
@@ -691,6 +691,6 @@ public class Strips extends PApplet {
 
 
     public static void main(String args[]) {
-        PApplet.main("Strips");
+        PApplet.main("MainWindow");
     }
 }

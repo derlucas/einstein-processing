@@ -60,7 +60,7 @@ public abstract class Costume {
     }
 
     void setSegmentColor(int segment, int color) {
-        if (segment < 0 || segment > Strips.SEGMENTS) {
+        if (segment < 0 || segment > MainWindow.SEGMENTS) {
             return;
         }
 
@@ -121,7 +121,7 @@ public abstract class Costume {
     }
 
     void render() {
-
+        //TODO: attack und release raus nehmen, wird eh nicht mehr verwendet
         if (attack >= 0.99f && release >= 0.99f) {
             // direct switching
             for (int led = 0; led < ledsCount; led++) {
@@ -197,14 +197,13 @@ public abstract class Costume {
     }
 
     void effectSingleColor(int color) {
-        for (int i = 0; i < Strips.SEGMENTS; i++) {
+        for (int i = 0; i < MainWindow.SEGMENTS; i++) {
             setSegmentColor(i, color);
         }
     }
 
 
     void effect110cmLine(int color) {       // obere Linie
-        //effectSingleColor(0);
         setSegmentColor(3, color);
         setSegmentColor(8, color);
         setSegmentColor(9, color);
