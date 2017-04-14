@@ -1,9 +1,11 @@
+package de.lp.strips;
+
 import hypermedia.net.UDP;
 import processing.core.PApplet;
 
-public class CostumeFabian extends Costume {
+public class StripFabian extends Strip {
 
-    CostumeFabian(PApplet base, UDP udp, String ipAddress) {
+    public StripFabian(PApplet base, UDP udp, String ipAddress) {
         super(base, udp, ipAddress, new int[][]{
                 {28, 46},
                 {82, 100},
@@ -27,7 +29,7 @@ public class CostumeFabian extends Costume {
     }
 
     @Override
-    void effect110cmLine(int color) {
+    public void effect110cmLine(int color) {
         setSegmentColor(2, color);
         setSegmentColor(12, color);
         setSegmentColor(13, color);

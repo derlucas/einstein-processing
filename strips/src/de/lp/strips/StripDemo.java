@@ -1,9 +1,12 @@
+package de.lp.strips;
+
+import de.lp.Symbols;
 import hypermedia.net.UDP;
 import processing.core.PApplet;
 
-public class CostumeDemo extends Costume {
+public class StripDemo extends Strip {
 
-    CostumeDemo(PApplet base, UDP udp, String ipAddress) {
+    public StripDemo(PApplet base, UDP udp, String ipAddress) {
         super(base, udp, ipAddress, new int[][]{
                 {35, 64}, {100, 129}, {130, 149}, {156, 163},
                 {76, 81}, {11, 16}, {18, 34}, {83, 99},
@@ -12,7 +15,7 @@ public class CostumeDemo extends Costume {
         }, 170);
     }
 
-    void setSegmentColor(int segment, int color) {
+    public void setSegmentColor(int segment, int color) {
         if (segment < 0 || segment > 11) {
             return;
         }
@@ -22,13 +25,13 @@ public class CostumeDemo extends Costume {
         }
     }
 
-    void effectMI() {
+    public void effectMI() {
         // unten linie
         effectSingleColor(0);
         setSegmentColor(2, base.color(255, 240, 0));
     }
 
-    void effectLA() {
+    public void effectLA() {
         // hosenträger
         effectSingleColor(0);
         int col = base.color(0, 0, 255);
@@ -36,7 +39,7 @@ public class CostumeDemo extends Costume {
         setSegmentColor(1, col);
     }
 
-    void effectDO() {
+    public void effectDO() {
         // X
         effectSingleColor(0);
         int col = base.color(255, 0, 0);
@@ -48,19 +51,19 @@ public class CostumeDemo extends Costume {
         setSegmentColor(11, col);
     }
 
-    void effectSingleColor(int color) {
-        for (int i = 0; i < MainWindow.SEGMENTS; i++) {
+    public void effectSingleColor(int color) {
+        for (int i = 0; i < SEGMENTS; i++) {
             setSegmentColor(i, color);
         }
     }
 
-    void effect110cmLine(int color) {
+    public void effect110cmLine(int color) {
         setSegmentColor(3, color);
         setSegmentColor(8, color);
         setSegmentColor(9, color);
     }
 
-    void effectSymbol(Symbols symbol, int color) {
+    public void effectSymbol(Symbols symbol, int color) {
 
         switch (symbol) {
             case RIGHT:

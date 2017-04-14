@@ -1,9 +1,11 @@
+package de.lp.strips;
+
 import hypermedia.net.UDP;
 import processing.core.PApplet;
 
-public class CostumeJohanna extends Costume {
+public class StripJohanna extends Strip {
 
-    CostumeJohanna(PApplet base, UDP udp, String ipAddress) {
+    public StripJohanna(PApplet base, UDP udp, String ipAddress) {
         super(base, udp, ipAddress, new int[][]{
                 {27, 47},
                 {81, 101},

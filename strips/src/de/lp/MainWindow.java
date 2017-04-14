@@ -1,3 +1,5 @@
+package de.lp;
+
 import controlP5.ControlEvent;
 import controlP5.ControlP5;
 import controlP5.RadioButton;
@@ -6,6 +8,7 @@ import hypermedia.net.UDP;
 import oscP5.OscMessage;
 import oscP5.OscP5;
 import processing.core.PApplet;
+import de.lp.strips.*;
 import themidibus.MidiBus;
 
 import java.awt.*;
@@ -36,13 +39,11 @@ public class MainWindow extends PApplet {
             "192.168.80.109", "192.168.80.110", "192.168.80.111", "192.168.80.112"};
 
     private static int SENDDELAY = 40;
-    static final int COUNT = 12;
-    static final int SEGMENTS = 18;
-
+    private static final int COUNT = 12;
     private float preAmp = 1.0f;
-    float amp[] = new float[12];
-    float ampRendered[] = new float[12];
-    OscP5 oscP5;
+    private float amp[] = new float[12];
+    private float ampRendered[] = new float[12];
+    private OscP5 oscP5;
     private ControlP5 cp5;
     private int note;
     private int bjnote;
@@ -55,14 +56,13 @@ public class MainWindow extends PApplet {
     private float greenval;
     private float blueval;
     private float ampMod;
-    private int outputColors[][] = new int[COUNT][170];
     private long millisDataSend;
     private long millisAudioRender;
-    private List<Costume> costumes = new ArrayList<>();
-    private List<Costume> costumesAlt = new ArrayList<>();
-    private List<Costume> costumesSopran = new ArrayList<>();
-    private List<Costume> costumesBass = new ArrayList<>();
-    private List<Costume> costumesTenor = new ArrayList<>();
+    private List<Strip> strips = new ArrayList<>();
+    private List<Strip> costumesAlt = new ArrayList<>();
+    private List<Strip> costumesSopran = new ArrayList<>();
+    private List<Strip> costumesBass = new ArrayList<>();
+    private List<Strip> costumesTenor = new ArrayList<>();
     private boolean ampEnable = false;
     private boolean rgbEnable = false;
     private boolean midiEnable = true;
@@ -75,19 +75,7 @@ public class MainWindow extends PApplet {
     private Symbols trialSymbol = Symbols.OFF;
     private Symbols knee3Symbol = Symbols.OFF;
     private int selectedEffect;
-    private Costume anna;
-    private Costume katharina;
-    private Costume ulrike;
-    private Costume luisa;
-    private Costume dominique;
-    private Costume johanna;
-    private Costume patrick;
-    private Costume fabian;
-    private Costume joerg;
-    private Costume michael;
-    private Costume christian;
-    private Costume julian;
-    int bang = 0;
+    private int bang = 0;
     private MidiBus midi;
     private Slider sldrOverallBrightness;
     private Slider sldrAttackAudio;
@@ -110,23 +98,23 @@ public class MainWindow extends PApplet {
         oscP5 = new OscP5(this, 2002);
         cp5 = new ControlP5(this);
 
-        anna = new CostumeAnna(this, udp, addresses[0]);                // Anna Miklashevich
-        katharina = new CostumeKatharina(this, udp, addresses[1]);      // Katharina Eberl
-        ulrike = new CostumeUlrike(this, udp, addresses[2]);            // Ulrike Hellermann
-        luisa = new CostumeLuisa(this, udp, addresses[3]);              // Luisa Kruppa
-        dominique = new CostumeDominique(this, udp, addresses[4]);      // Dominique Bilitza
-        johanna = new CostumeJohanna(this, udp, addresses[5]);          // Johanna Krödel
-        patrick = new CostumePatrick(this, udp, addresses[6]);          // Patrick Brandt
-        fabian = new CostumeFabian(this, udp, addresses[7]);            // Fabian Strotmann
-        joerg = new CostumeJoerg(this, udp, addresses[8]);              // Jörg Deutschewitz
-        michael = new CostumeMichael(this, udp, addresses[9]);          // Michael Hofmeister
-        christian = new CostumeChristian(this, udp, addresses[10]);     // Christian Walter
-        julian = new CostumeJulian(this, udp, addresses[11]);           // Julian Popken
+        Strip anna = new StripAnna(this, udp, addresses[0]);                // Anna Miklashevich
+        Strip katharina = new StripKatharina(this, udp, addresses[1]);      // Katharina Eberl
+        Strip ulrike = new StripUlrike(this, udp, addresses[2]);            // Ulrike Hellermann
+        Strip luisa = new StripLuisa(this, udp, addresses[3]);              // Luisa Kruppa
+        Strip dominique = new StripDominique(this, udp, addresses[4]);      // Dominique Bilitza
+        Strip johanna = new StripJohanna(this, udp, addresses[5]);          // Johanna Krödel
+        Strip patrick = new StripPatrick(this, udp, addresses[6]);          // Patrick Brandt
+        Strip fabian = new StripFabian(this, udp, addresses[7]);            // Fabian Strotmann
+        Strip joerg = new StripJoerg(this, udp, addresses[8]);              // Jörg Deutschewitz
+        Strip michael = new StripMichael(this, udp, addresses[9]);          // Michael Hofmeister
+        Strip christian = new StripChristian(this, udp, addresses[10]);     // Christian Walter
+        Strip julian = new StripJulian(this, udp, addresses[11]);           // Julian Popken
 
-        costumes.add(anna); costumes.add(katharina); costumes.add(ulrike);
-        costumes.add(luisa); costumes.add(dominique); costumes.add(johanna);
-        costumes.add(patrick); costumes.add(fabian); costumes.add(joerg);
-        costumes.add(michael); costumes.add(christian); costumes.add(julian);
+        strips.add(anna); strips.add(katharina); strips.add(ulrike);
+        strips.add(luisa); strips.add(dominique); strips.add(johanna);
+        strips.add(patrick); strips.add(fabian); strips.add(joerg);
+        strips.add(michael); strips.add(christian); strips.add(julian);
 
         costumesSopran.add(anna); costumesSopran.add(katharina); costumesSopran.add(ulrike);
         costumesAlt.add(luisa); costumesAlt.add(dominique); costumesAlt.add(johanna);
@@ -136,9 +124,6 @@ public class MainWindow extends PApplet {
 
         for (int i = 0; i < COUNT; i++) {
             cp5.addToggle("output" + i).setPosition(300 + i * 40, 70).setSize(30, 15).setId(i).setValue(false).setLabel("Pa " + (i + 1));
-            for (int j = 0; j < 170; j++) {
-                outputColors[i][j] = 0;
-            }
         }
 
         int y = 10;
@@ -182,7 +167,6 @@ public class MainWindow extends PApplet {
         cp5.addBang("setBlack").setPosition(300 + x++ * 40, 190).setSize(30, 30).setLabel("BLK");
         cp5.addBang("flash110").setPosition(300 + x++ * 40, 190).setSize(30, 30).setLabel("F110");
 
-
         midi = new MidiBus(this, 0, 1); // this,input,outputdev
 
         surface.setTitle("Costumes");
@@ -190,23 +174,23 @@ public class MainWindow extends PApplet {
 
     public void flash110() {
         int color = color(255);
-        costumes.forEach(costume -> costume.effect110cmLine(color));
+        strips.forEach(costume -> costume.effect110cmLine(color));
         effect110Value = effect110Duration;
     }
 
     private void trialPrison(Symbols symbol) {
         int color = color(255);
         //color = color(255, 196,135);  // warmweiß
-        for (Costume costume : costumes) {
-            costume.effectSingleColor(0);
-            costume.effectSymbol(symbol, color);
+        for (Strip strip : strips) {
+            strip.effectSingleColor(0);
+            strip.effectSymbol(symbol, color);
         }
         trialSymbol = symbol;
         effectFadeValue = effectFadeDuration;
     }
 
     public void setBlack() {
-        costumes.forEach(Costume::black);
+        strips.forEach(Strip::black);
     }
 
     public void blackout(boolean bo) {
@@ -214,6 +198,7 @@ public class MainWindow extends PApplet {
             setBlack();
         }
         this.blackout = bo;
+        strips.forEach(strip -> strip.blackout(bo));
     }
 
     public void draw() {
@@ -246,11 +231,11 @@ public class MainWindow extends PApplet {
 
         // draw costumes
         int i = 0;
-        for (Costume costume : costumes) {
+        for (Strip strip : strips) {
 
             pushMatrix();
             translate(10 + i * 65, 400);
-            costume.display();
+            strip.display();
             popMatrix();
             i++;
         }
@@ -299,21 +284,21 @@ public class MainWindow extends PApplet {
 
         millisDataSend = System.currentTimeMillis();
 
-        for (Costume costume : costumes) {
-            costume.send();
+        for (Strip strip : strips) {
+            strip.send();
         }
     }
 
     private void renderEffect() {
 
         if (ampEnable) {
-            for (int i = 0; i < costumes.size(); i++) {
+            for (int i = 0; i < strips.size(); i++) {
                 float a = ampRendered[i];
-                Costume costume = costumes.get(i);
+                Strip strip = strips.get(i);
 
                 float brightness = 1 - ampMod;
                 brightness = brightness + a * ampMod;
-                costume.brightness(brightness * overallbrightness);
+                strip.brightness(brightness * overallbrightness);
             }
         }
 
@@ -323,33 +308,32 @@ public class MainWindow extends PApplet {
 //            }
         if (rgbEnable) { // RGB demo fade
             int color = color(255 * redval, 255 * greenval, 255 * blueval);
-            costumes.forEach(e -> e.effectSingleColor(color));
+            strips.forEach(e -> e.effectSingleColor(color));
         }
 
         if (effect110Value > 0) {
             effect110Value--;
             int color = color(255 * ((float) effect110Value / (float) effect110Duration));
-            costumes.forEach(costume -> costume.effect110cmLine(color));
+            strips.forEach(costume -> costume.effect110cmLine(color));
         } else if (effect110Value == 0) {
             effect110Value--;
             int color = color(0);
-            costumes.forEach(costume -> costume.effect110cmLine(color));
+            strips.forEach(costume -> costume.effect110cmLine(color));
         }
-
 
         if (effectFadeValue > 0) {
             effectFadeValue--;
             int color = color(255 * ((float) effectFadeValue / (float) effectFadeDuration));
             if (selectedEffect == TRIALPRI) {
-                costumes.forEach(costume -> costume.effectSymbol(trialSymbol, color));
+                strips.forEach(costume -> costume.effectSymbol(trialSymbol, color));
             } else if (selectedEffect == KNEE3) {
-                costumes.forEach(costume -> costume.effectSymbol(knee3Symbol, color));
+                strips.forEach(costume -> costume.effectSymbol(knee3Symbol, color));
             }
         } else if (effectFadeValue == 0) {
             effectFadeValue--;
             int color = color(0);
             if (selectedEffect == TRIALPRI | selectedEffect == KNEE3) {
-                costumes.forEach(costume -> costume.effectSymbol(trialSymbol, color));
+                strips.forEach(costume -> costume.effectSymbol(trialSymbol, color));
             }
         }
     }
@@ -357,10 +341,10 @@ public class MainWindow extends PApplet {
     public void keyPressed() {
         if (selectedEffect == TESTMODE && key == '1') {
             bang++;
-            bang %= SEGMENTS;
-            for (Costume costume : costumes) {
-                costume.black();
-                costume.setSegmentColor(bang, color(255));
+            bang %= Strip.SEGMENTS;
+            for (Strip strip : strips) {
+                strip.black();
+                strip.setSegmentColor(bang, color(255));
             }
         }
 
@@ -371,7 +355,6 @@ public class MainWindow extends PApplet {
                 la(selectedEffect, false);
             } else if (key == 'd') {
                 doo(selectedEffect, false);
-
             }
         }
 
@@ -403,8 +386,8 @@ public class MainWindow extends PApplet {
     }
 
     private void knee3(int num) {
-        for (Costume costume : costumes) {
-            costume.effectSingleColor(0);
+        for (Strip strip : strips) {
+            strip.effectSingleColor(0);
         }
 
         final int color = color(255);
@@ -418,59 +401,58 @@ public class MainWindow extends PApplet {
             knee3Symbol = Symbols.X;
         }
 
-        costumes.forEach(costume -> costume.effectSymbol(knee3Symbol, color));
+        strips.forEach(costume -> costume.effectSymbol(knee3Symbol, color));
         effectFadeValue = effectFadeDuration;
     }
 
     private void mi(int milaNumber, boolean off) {
         milaNumber %= 4;
         if (milaNumber == TRIAL1) {
-            costumesSopran.forEach(off ? Costume::black : Costume::effectMI);
-            costumesAlt.forEach(off ? Costume::black : Costume::effectMI);
-            costumesBass.forEach(off ? Costume::black : Costume::black);
-            costumesTenor.forEach(off ? Costume::black : Costume::black);
+            costumesSopran.forEach(off ? Strip::black : Strip::effectMI);
+            costumesAlt.forEach(off ? Strip::black : Strip::effectMI);
+            costumesBass.forEach(off ? Strip::black : Strip::black);
+            costumesTenor.forEach(off ? Strip::black : Strip::black);
         } else if (milaNumber == TRIAL2) {
-            costumesAlt.forEach(Costume::black);
-            costumesSopran.forEach(Costume::black);
+            costumesAlt.forEach(Strip::black);
+            costumesSopran.forEach(Strip::black);
         } else if (milaNumber == TRIAL3) {
-            costumesSopran.forEach(off ? Costume::black : Costume::effectMI);
-            costumesAlt.forEach(off ? Costume::black : Costume::effectMI);
-            costumesBass.forEach(off ? Costume::black : Costume::effectDO);
-            costumesTenor.forEach(off ? Costume::black : Costume::effectDO);
+            costumesSopran.forEach(off ? Strip::black : Strip::effectMI);
+            costumesAlt.forEach(off ? Strip::black : Strip::effectMI);
+            costumesBass.forEach(off ? Strip::black : Strip::effectDO);
+            costumesTenor.forEach(off ? Strip::black : Strip::effectDO);
         }
     }
 
     private void la(int milaNumber, boolean off) {
         milaNumber %= 4;
         if (milaNumber == TRIAL1) {
-            costumesSopran.forEach(off ? Costume::black : Costume::effectLA);
-            costumesAlt.forEach(off ? Costume::black : Costume::effectMI);
-            costumesBass.forEach(Costume::black);
-            costumesTenor.forEach(Costume::black);
+            costumesSopran.forEach(off ? Strip::black : Strip::effectLA);
+            costumesAlt.forEach(off ? Strip::black : Strip::effectMI);
+            costumesBass.forEach(Strip::black);
+            costumesTenor.forEach(Strip::black);
         } else if (milaNumber == TRIAL2) {
-            costumesBass.forEach(off ? Costume::black : Costume::effectLA);
-            costumesTenor.forEach(off ? Costume::black : Costume::effectLA);
+            costumesBass.forEach(off ? Strip::black : Strip::effectLA);
+            costumesTenor.forEach(off ? Strip::black : Strip::effectLA);
         } else if (milaNumber == TRIAL3) {
-            costumesSopran.forEach(off ? Costume::black : Costume::effectLA);
-            costumesAlt.forEach(off ? Costume::black : Costume::effectMI);
-            costumesBass.forEach(off ? Costume::black : Costume::effectLA);
-            costumesTenor.forEach(off ? Costume::black : Costume::effectLA);
+            costumesSopran.forEach(off ? Strip::black : Strip::effectLA);
+            costumesAlt.forEach(off ? Strip::black : Strip::effectMI);
+            costumesBass.forEach(off ? Strip::black : Strip::effectLA);
+            costumesTenor.forEach(off ? Strip::black : Strip::effectLA);
         }
     }
 
     private void doo(int milaNumber, boolean off) {
         milaNumber %= 4;
         if (milaNumber == TRIAL2) {
-            costumesBass.forEach(off ? Costume::black : Costume::effectDO);
-            costumesTenor.forEach(off ? Costume::black : Costume::effectDO);
+            costumesBass.forEach(off ? Strip::black : Strip::effectDO);
+            costumesTenor.forEach(off ? Strip::black : Strip::effectDO);
         } else if (milaNumber == TRIAL3) {
-            costumesSopran.forEach(off ? Costume::black : Costume::effectDO);
-            costumesAlt.forEach(off ? Costume::black : Costume::effectLA);
-            costumesBass.forEach(Costume::black);
-            costumesTenor.forEach(Costume::black);
+            costumesSopran.forEach(off ? Strip::black : Strip::effectDO);
+            costumesAlt.forEach(off ? Strip::black : Strip::effectLA);
+            costumesBass.forEach(Strip::black);
+            costumesTenor.forEach(Strip::black);
         }
     }
-
 
     private void oscOrgel(OscMessage msg) {
 
@@ -485,8 +467,9 @@ public class MainWindow extends PApplet {
         int noteModulo = note % 12;
         int octave = note / 12;
 
-        if (midiDebug)
+        if (midiDebug) {
             System.out.println("organ " + note + " modnote: " + noteModulo + " oct: " + octave + " vel: " + velocity);
+        }
 
         /*if (selectedEffect == TRIAL1) {  // mi la do la  MILA1
             if (noteModulo == 4 && octave == 5) {
@@ -512,14 +495,15 @@ public class MainWindow extends PApplet {
     private void oscBjarne(OscMessage msg) {
         bjnote = msg.get(0).intValue();
         bjvelocity = msg.get(1).intValue();
-        if (midiDebug) System.out.println("bjmidi " + bjnote + " vel:" + bjvelocity);
+        if (midiDebug) {
+            System.out.println("bjmidi " + bjnote + " vel:" + bjvelocity);
+        }
 
         if (bjnote == 35 && bjvelocity == 0) {
             flash110();
         } else if (bjnote == 34 && bjvelocity == 0) {
             setBlack();
         }
-
 
         if (bjvelocity == 0 && selectedEffect == KNEE3 || selectedEffect == KNEE3ON) {
             switch (bjnote) {
@@ -589,14 +573,13 @@ public class MainWindow extends PApplet {
         if (theEvent.isController()) {
             if (theEvent.getName().startsWith("output")) {
                 int id = theEvent.getId();
-                if (id >= 0 && id < COUNT && costumes.get(id) != null) {
-                    costumes.get(id).setEnabled(theEvent.getValue() > 0);
+                if (id >= 0 && id < COUNT && strips.get(id) != null) {
+                    strips.get(id).setEnabled(theEvent.getValue() > 0);
                 }
             } else if (theEvent.getName().startsWith("overallbrightness")) {
-                costumes.forEach(costume -> costume.brightness(theEvent.getValue()));
+                strips.forEach(costume -> costume.brightness(theEvent.getValue()));
             }
         }
-
 
         if (theEvent.getName().startsWith("effectRadio")) {
 
@@ -650,7 +633,6 @@ public class MainWindow extends PApplet {
 
     public void noteOff(int channel, int pitch, int velocity) {
 
-
         if (pitch >= 40 && pitch <= 51) {
             for (int i = 40; i <= 51; i++) {
                 midi.sendNoteOff(9, i, 0);
@@ -658,7 +640,6 @@ public class MainWindow extends PApplet {
 
             midi.sendNoteOn(9, pitch, 10);
         }
-
     }
 
     public void controllerChange(int channel, int number, int value) {
@@ -680,8 +661,7 @@ public class MainWindow extends PApplet {
         }
     }
 
-
     public static void main(String args[]) {
-        PApplet.main("MainWindow");
+        PApplet.main("de.lp.MainWindow");
     }
 }

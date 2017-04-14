@@ -1,3 +1,5 @@
+package de.lp;
+
 public enum Symbols {
     RIGHT,
     LEFT,

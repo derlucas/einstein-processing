@@ -1,20 +1,23 @@
+package de.lp.strips;
+
+import de.lp.Symbols;
 import hypermedia.net.UDP;
 import processing.core.PApplet;
 
-public abstract class Costume {
+public class Strip {
 
+    public static final int SEGMENTS = 18;
     int segmentation[][];
     final PApplet base;
-    final String ipAddress;
-    final UDP udp;
+    private final String ipAddress;
+    private final UDP udp;
     int ledsCount;
-    float outputRGB[][];
-    boolean enableOutput = false;
-    float brightness = 1.0f;
-    boolean blackout = false;
-    private long fadetimer;
+    private float outputRGB[][];
+    private boolean enableOutput = false;
+    private float brightness = 1.0f;
+    private boolean blackout = false;
 
-    Costume(PApplet base, UDP udp, String ipAddress, int segmentation[][], int ledsCount) {
+    public Strip(PApplet base, UDP udp, String ipAddress, int segmentation[][], int ledsCount) {
         this.base = base;
         this.ipAddress = ipAddress;
         this.udp = udp;
@@ -38,7 +41,7 @@ public abstract class Costume {
         outputRGB[led][2] = base.blue(color) / 255.0f;
     }
 
-    void display() {
+    public void display() {
         base.fill(0);
         base.stroke(20);
 
@@ -54,8 +57,8 @@ public abstract class Costume {
         }
     }
 
-    void setSegmentColor(int segment, int color) {
-        if (segment < 0 || segment > MainWindow.SEGMENTS) {
+    public void setSegmentColor(int segment, int color) {
+        if (segment < 0 || segment > SEGMENTS) {
             return;
         }
 
@@ -64,23 +67,23 @@ public abstract class Costume {
         }
     }
 
-    void setEnabled(boolean enabled) {
+    public void setEnabled(boolean enabled) {
         this.enableOutput = enabled;
     }
 
-    void brightness(float brightness) {
+    public void brightness(float brightness) {
         if (brightness > 1.0f || brightness < 0.0f) {
             return;
         }
         this.brightness = brightness;
     }
 
-    void blackout(boolean bo) {
+    public void blackout(boolean bo) {
         this.blackout = bo;
     }
 
 
-    void send() {
+    public void send() {
         if (!enableOutput) {
             return;
         }
@@ -108,11 +111,11 @@ public abstract class Costume {
         udp.send(buffer, ipAddress, 4210);
     }
 
-    void black() {
+    public void black() {
         effectSingleColor(0);
     }
 
-    void effectMI() {
+    public void effectMI() {
         effectSingleColor(0);
         // mi   unten linie
         int color = base.color(0,0,255);
@@ -121,7 +124,7 @@ public abstract class Costume {
         setSegmentColor(13, color);
     }
 
-    void effectLA() {
+    public void effectLA() {
         effectSingleColor(0);
 
         // hosenträger
@@ -132,7 +135,7 @@ public abstract class Costume {
         setSegmentColor(17, color);
     }
 
-    void effectDO() {
+    public void effectDO() {
         effectSingleColor(0);
         // X
         int color = base.color(255,0,0);
@@ -144,14 +147,14 @@ public abstract class Costume {
         setSegmentColor(15, color);
     }
 
-    void effectSingleColor(int color) {
-        for (int i = 0; i < MainWindow.SEGMENTS; i++) {
+    public void effectSingleColor(int color) {
+        for (int i = 0; i < SEGMENTS; i++) {
             setSegmentColor(i, color);
         }
     }
 
 
-    void effect110cmLine(int color) {       // obere Linie
+    public void effect110cmLine(int color) {       // obere Linie
         setSegmentColor(3, color);
         setSegmentColor(8, color);
         setSegmentColor(9, color);
@@ -159,7 +162,7 @@ public abstract class Costume {
         setSegmentColor(11, color);
     }
 
-    void effectSymbol(Symbols symbol, int color) {
+    public void effectSymbol(Symbols symbol, int color) {
 
         switch (symbol) {
             case RIGHT:
