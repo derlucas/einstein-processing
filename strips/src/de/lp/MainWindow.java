@@ -1,92 +1,57 @@
 package de.lp;
 
-import controlP5.ControlEvent;
-import controlP5.ControlP5;
-import controlP5.RadioButton;
-import controlP5.Slider;
-import hypermedia.net.UDP;
+import controlP5.*;
 import oscP5.OscMessage;
 import oscP5.OscP5;
 import processing.core.PApplet;
-import de.lp.strips.*;
 import themidibus.MidiBus;
 
 import java.awt.*;
-import java.util.ArrayList;
-import java.util.List;
 
 public class MainWindow extends PApplet {
 
-    private final static int TRIAL1 = 1;
-    private final static int TRIAL2 = 2;
-    private final static int TRIAL3 = 3;
-    private final static int KNEE3 = 5;
-    private final static int TRIALPRI = 6;
-    private final static int TESTMODE = 7;
-    private final static int KNEE3ON = 8;
-    private final static int DANCE2 = 9;
-    private final static int KNEE4 = 10;
-    private final static int BUILDING = 11;
     private static final String ORGAN2 = "/midi/MIDISPORT_2x2_Anniv_MIDI_1/0";
     private static final String ORGAN1 = "/midi/MIDISPORT_2x2_Anniv_MIDI_2/5";
-
-    private String addresses[] = {"192.168.80.121", "192.168.80.122", "192.168.80.123", "192.168.80.124",
-            "192.168.80.125", "192.168.80.126", "192.168.80.127", "192.168.80.128",
-            "192.168.80.129", "192.168.80.130", "192.168.80.131", "192.168.80.132"};
-
-    private String addressesPanzer[] = {"192.168.80.101", "192.168.80.102", "192.168.80.103", "192.168.80.104",
-            "192.168.80.105", "192.168.80.106", "192.168.80.107", "192.168.80.108",
-            "192.168.80.109", "192.168.80.110", "192.168.80.111", "192.168.80.112"};
-
     private static int SENDDELAY = 40;
     private static final int COUNT = 12;
+
+
     private float preAmp = 1.0f;
     private float amp[] = new float[12];
     private float ampRendered[] = new float[12];
-    private OscP5 oscP5;
-    private ControlP5 cp5;
     private int note;
     private int bjnote;
     private int velocity;
     private int bjvelocity;
-    private UDP udp;
     private boolean blackout = false;
-    private float overallbrightness;
     private float redval;
     private float greenval;
     private float blueval;
-    private float ampMod;
     private long millisDataSend;
     private long millisAudioRender;
-    private List<Strip> strips = new ArrayList<>();
-    private List<Strip> costumesAlt = new ArrayList<>();
-    private List<Strip> costumesSopran = new ArrayList<>();
-    private List<Strip> costumesBass = new ArrayList<>();
-    private List<Strip> costumesTenor = new ArrayList<>();
-    private boolean ampEnable = false;
+
     private boolean rgbEnable = false;
     private boolean midiEnable = true;
-    private int effect110Value = -1;
-    private int effect110Duration = 10;
-    private int effectFadeValue = -1;
-    private int effectFadeDuration = 10;
+
     private float attackAudio = 1.0f;
     private float releaseAudio = 1.0f;
-    private Symbols trialSymbol = Symbols.OFF;
-    private Symbols knee3Symbol = Symbols.OFF;
+
     private int selectedEffect;
     private int bang = 0;
     private MidiBus midi;
     private Slider sldrOverallBrightness;
     private Slider sldrAttackAudio;
     private Slider sldrReleaseAudio;
+    private Slider sldrReleaseEffect;
+    private Slider sldrAttackEffect;
     private Slider sldrAmpMod;
     private Slider sldrEffectDuration;
     private RadioButton effectRadio;
     private boolean midiDebug;
+    private Trinkhalle trinkhalle;
 
     public void settings() {
-        size(800, 600);
+        size(800, 430);
     }
 
     public void setup() {
@@ -94,111 +59,74 @@ public class MainWindow extends PApplet {
 
         MidiBus.list();
 
-        udp = new UDP(this, 2102);
-        oscP5 = new OscP5(this, 2002);
-        cp5 = new ControlP5(this);
-
-        Strip anna = new StripAnna(this, udp, addresses[0]);                // Anna Miklashevich
-        Strip katharina = new StripKatharina(this, udp, addresses[1]);      // Katharina Eberl
-        Strip ulrike = new StripUlrike(this, udp, addresses[2]);            // Ulrike Hellermann
-        Strip luisa = new StripLuisa(this, udp, addresses[3]);              // Luisa Kruppa
-        Strip dominique = new StripDominique(this, udp, addresses[4]);      // Dominique Bilitza
-        Strip johanna = new StripJohanna(this, udp, addresses[5]);          // Johanna Krödel
-        Strip patrick = new StripPatrick(this, udp, addresses[6]);          // Patrick Brandt
-        Strip fabian = new StripFabian(this, udp, addresses[7]);            // Fabian Strotmann
-        Strip joerg = new StripJoerg(this, udp, addresses[8]);              // Jörg Deutschewitz
-        Strip michael = new StripMichael(this, udp, addresses[9]);          // Michael Hofmeister
-        Strip christian = new StripChristian(this, udp, addresses[10]);     // Christian Walter
-        Strip julian = new StripJulian(this, udp, addresses[11]);           // Julian Popken
-
-        strips.add(anna); strips.add(katharina); strips.add(ulrike);
-        strips.add(luisa); strips.add(dominique); strips.add(johanna);
-        strips.add(patrick); strips.add(fabian); strips.add(joerg);
-        strips.add(michael); strips.add(christian); strips.add(julian);
-
-        costumesSopran.add(anna); costumesSopran.add(katharina); costumesSopran.add(ulrike);
-        costumesAlt.add(luisa); costumesAlt.add(dominique); costumesAlt.add(johanna);
-        costumesTenor.add(patrick); costumesTenor.add(fabian); costumesTenor.add(joerg);
-        costumesBass.add(michael); costumesBass.add(christian); costumesBass.add(julian);
-
+        new OscP5(this, 2002);
+        ControlP5 cp5 = new ControlP5(this);
+        trinkhalle = new Trinkhalle(this);
 
         for (int i = 0; i < COUNT; i++) {
-            cp5.addToggle("output" + i).setPosition(300 + i * 40, 70).setSize(30, 15).setId(i).setValue(false).setLabel("Pa " + (i + 1));
+            cp5.addToggle("outputStrip" + i).setPosition(300 + i * 40, 70).setSize(30, 15).setId(i).setValue(false).setLabel("STRP " + (i + 1));
+            cp5.addToggle("outputPanzer" + i).setPosition(300 + i * 40, 110).setSize(30, 15).setId(i).setValue(false).setLabel("PANZ " + (i + 1));
         }
 
         int y = 10;
-        sldrOverallBrightness = cp5.addSlider("overallbrightness").setPosition(10, y).setSize(100, 20).setRange(0, 1.0f).setValue(0.5f);
-        cp5.addSlider("preAmp").setPosition(10, y += 25).setSize(100, 20).setRange(0, 100.0f);
+        sldrOverallBrightness = cp5.addSlider("overallbrightness").setPosition(10, y).setSize(100, 10).setRange(0, 1.0f).setValue(0.5f);
+        cp5.addSlider("preAmp").setPosition(10, y += 15).setSize(100, 10).setRange(0, 100.0f);
         y += 10;
-        sldrAttackAudio = cp5.addSlider("attackAudio").setPosition(10, y += 25).setSize(100, 20).setRange(0.0f, 1.0f).setValue(1.0f);
-        sldrReleaseAudio = cp5.addSlider("releaseAudio").setPosition(10, y += 25).setSize(100, 20).setRange(0.0f, 1.0f).setValue(1.0f);
+        sldrAttackAudio = cp5.addSlider("attackAudio").setPosition(10, y += 15).setSize(100, 10).setRange(0.0f, 1.0f).setValue(1.0f);
+        sldrReleaseAudio = cp5.addSlider("releaseAudio").setPosition(10, y += 15).setSize(100, 10).setRange(0.0f, 1.0f).setValue(1.0f);
         y += 10;
-        cp5.addSlider("redval").setPosition(10, y += 25).setSize(100, 20).setRange(0, 1.0f);
-        cp5.addSlider("greenval").setPosition(10, y += 25).setSize(100, 20).setRange(0, 1.0f);
-        cp5.addSlider("blueval").setPosition(10, y += 25).setSize(100, 20).setRange(0, 1.0f);
-        y += 10;
-        sldrAmpMod = cp5.addSlider("ampMod").setPosition(10, y += 25).setSize(100, 20).setRange(0.0f, 1.0f).setValue(0.0f);
-        y += 10;
-        cp5.addSlider("effect110Duration").setPosition(10, y += 25).setSize(100, 20).setRange(5, 100);
-        sldrEffectDuration = cp5.addSlider("effectFadeDuration").setPosition(10, y += 25).setSize(100, 20).setRange(1, 200);
+        cp5.addSlider("redval").setPosition(10, y += 15).setSize(100, 10).setRange(0, 1.0f);
+        cp5.addSlider("greenval").setPosition(10, y += 15).setSize(100, 10).setRange(0, 1.0f);
+        cp5.addSlider("blueval").setPosition(10, y += 15).setSize(100, 10).setRange(0, 1.0f);
+        y += 15;
+        sldrAmpMod = cp5.addSlider("ampMod").setPosition(10, y += 15).setSize(100, 10).setRange(0.0f, 1.0f).setValue(0.0f);
+        sldrEffectDuration = cp5.addSlider("effectFadeDuration").setPosition(10, y += 15).setSize(100, 10).setValue(10).setRange(-1, 126);
+        sldrAttackEffect = cp5.addSlider("attackEffect").setPosition(10, y += 15).setSize(100, 10).setRange(0.0f, 1.0f).setValue(1.0f);
+        sldrReleaseEffect = cp5.addSlider("releaseEffect").setPosition(10, y += 15).setSize(100, 10).setRange(0.0f, 1.0f).setValue(1.0f);
 
-        cp5.addToggle("blackout").setPosition(250, 70).setSize(30, 15).setId(12).setValue(false).setLabel("BO");
+        cp5.addToggle("setBlackout").setPosition(250, 70).setSize(30, 15).setId(12).setValue(false).setLabel("BO");
         cp5.addToggle("midiEnable").setPosition(210, 70).setSize(30, 15).setLabel("MIDI");
         cp5.addToggle("midiDebug").setPosition(210, 110).setSize(30, 15).setId(12).setValue(false).setLabel("MIDI DBG");
 
-        int x = 0;
-        cp5.addToggle("rgbEnable").setPosition(300 + x++ * 40, 150).setSize(30, 15).setValue(false).setLabel("RGB");
-        cp5.addToggle("ampEnable").setPosition(300 + x++ * 40, 150).setSize(30, 15).setValue(false).setLabel("AMP");
-        effectRadio = cp5.addRadioButton("effectRadio").setPosition(300, 250).setSize(30, 15).setColorForeground(color(120))
-                .setColorActive(color(255)).setColorLabel(color(255)).setItemsPerRow(5).setSpacingColumn(60)
-                .addItem("TEST", TESTMODE)
-                .addItem("TRIAL1", TRIAL1)
-                .addItem("TRIAL2", TRIAL2)
-                .addItem("TRIAL3", TRIAL3)
-                .addItem("DANCE2", DANCE2)
-                .addItem("KNEE4", KNEE4)
-                .addItem("KNEE3", KNEE3)
-                .addItem("KNEE3ON", KNEE3ON)
-                .addItem("TRIALPRI", TRIALPRI)
-                .addItem("BUILDING", BUILDING)
+        effectRadio = cp5.addRadioButton("effectRadio").setPosition(300, 160).setSize(30, 15).setColorForeground(color(120))
+                .setColorActive(color(255)).setColorLabel(color(255)).setItemsPerRow(5)
+                .setSpacingColumn(60).setSpacingRow(10)
+                .addItem("TRIAL1", Effect.TRIAL1.getValue())
+                .addItem("TRIAL2", Effect.TRIAL2.getValue())
+                .addItem("TRIAL3", Effect.TRIAL3.getValue())
+                .addItem("KNEE3", Effect.KNEE3.getValue())
+                .addItem("KNEE3ON", Effect.KNEE3ON.getValue())
+                .addItem("TRIALPRI", Effect.TRIALPRI.getValue())
+                .addItem("DANCE2", Effect.DANCE2.getValue())
+                .addItem("KNEE4", Effect.KNEE4.getValue())
+                .addItem("BUILDING", Effect.BUILDING.getValue())
+                .addItem("TEST", Effect.TESTMODE.getValue())
+                .addItem("RGB", Effect.RGB.getValue())
                 .deactivateAll();
 
-        x = 0;
-        cp5.addBang("setBlack").setPosition(300 + x++ * 40, 190).setSize(30, 30).setLabel("BLK");
-        cp5.addBang("flash110").setPosition(300 + x++ * 40, 190).setSize(30, 30).setLabel("F110");
+        cp5.addBang("setBlack").setPosition(250, 110).setSize(30, 30).setLabel("BLK");
+        cp5.addBang("flash110").setPosition(250, 160).setSize(30, 30).setLabel("F110");
 
         midi = new MidiBus(this, 0, 1); // this,input,outputdev
 
+        midi.sendControllerChange(0, 3, 127 / 2); // brightness
+        midi.sendControllerChange(0, 14, 127);  // sync attack and release audio knobs
+        midi.sendControllerChange(0, 15, 127);
+        midi.sendControllerChange(0, 12, 0);  // ampMod
+        midi.sendControllerChange(0, 13, 11);  // effectFadeDuration
+        midi.sendControllerChange(0, 9, 127);  // releaseEffect
+
         surface.setTitle("Costumes");
+        textSize(11);
     }
 
-    public void flash110() {
-        int color = color(255);
-        strips.forEach(costume -> costume.effect110cmLine(color));
-        effect110Value = effect110Duration;
-    }
 
-    private void trialPrison(Symbols symbol) {
-        int color = color(255);
-        //color = color(255, 196,135);  // warmweiß
-        for (Strip strip : strips) {
-            strip.effectSingleColor(0);
-            strip.effectSymbol(symbol, color);
-        }
-        trialSymbol = symbol;
-        effectFadeValue = effectFadeDuration;
-    }
-
-    public void setBlack() {
-        strips.forEach(Strip::black);
-    }
-
-    public void blackout(boolean bo) {
-        if (this.blackout != bo) {
-            setBlack();
+    public void blackout(boolean bo) {      // function for the ControlP5 Toggle
+        if (this.blackout != bo && bo) {
+            trinkhalle.setBlack();
         }
         this.blackout = bo;
-        strips.forEach(strip -> strip.blackout(bo));
+        trinkhalle.setBlackout(bo);
     }
 
     public void draw() {
@@ -227,230 +155,84 @@ public class MainWindow extends PApplet {
         fill(Color.HSBtoRGB(map(bjnote, 0, 127, 0.0f, 1.0f), 0.75f, 0.7f));
         rect(245, 10, 20, 20);
 
-        renderEffect();
+        trinkhalle.render();
 
         // draw costumes
-        int i = 0;
-        for (Strip strip : strips) {
-
-            pushMatrix();
-            translate(10 + i * 65, 400);
-            strip.display();
-            popMatrix();
-            i++;
-        }
+        trinkhalle.draw(10, 250);
 
         // send data via UDP
-        sendOutputs();
+        if (System.currentTimeMillis() - millisDataSend > SENDDELAY) {
+            millisDataSend = System.currentTimeMillis();
+            trinkhalle.send();
+        }
 
         fill(255);
         text("bang: " + bang, 210, 50);
     }
 
     private void fadeAudio() {
-        if (attackAudio >= 0.99f && releaseAudio >= 0.99f) {
-            // direct switching
-            for (int ch = 0; ch < COUNT; ch++) {
-                ampRendered[ch] = amp[ch];
-            }
-        } else if (millis() - millisAudioRender > 10) {
-            for (int ch = 0; ch < COUNT; ch++) {
 
-                float diff = ampRendered[ch] - amp[ch];
+        if (millis() - millisAudioRender > 10) {
+            if (attackAudio >= 0.99f && releaseAudio >= 0.99f) {
+                // direct switching
+                for (int ch = 0; ch < COUNT; ch++) {
+                    ampRendered[ch] = amp[ch];
+                }
+            } else {
+                for (int ch = 0; ch < COUNT; ch++) {
 
-                if (Math.abs(diff) > 0.01) {
-                    if (diff > 0) {
-                        ampRendered[ch] -= diff * releaseAudio;
-                        if (ampRendered[ch] > 1.0f) {
-                            ampRendered[ch] = 1.0f;
-                        }
-                    } else {
-                        ampRendered[ch] -= diff * attackAudio;
-                        if (ampRendered[ch] < 0.0f) {
-                            ampRendered[ch] = 0.0f;
+                    float diff = ampRendered[ch] - amp[ch];
+
+                    if (Math.abs(diff) > 0.01) {
+                        if (diff > 0) {
+                            ampRendered[ch] -= diff * releaseAudio;
+                            if (ampRendered[ch] > 1.0f) {
+                                ampRendered[ch] = 1.0f;
+                            }
+                        } else {
+                            ampRendered[ch] -= diff * attackAudio;
+                            if (ampRendered[ch] < 0.0f) {
+                                ampRendered[ch] = 0.0f;
+                            }
                         }
                     }
                 }
             }
 
+            trinkhalle.setAmpValues(ampRendered);
             millisAudioRender = millis();
         }
     }
 
-    private void sendOutputs() {
-        if (System.currentTimeMillis() - millisDataSend < SENDDELAY) {
-            return;
-        }
-
-        millisDataSend = System.currentTimeMillis();
-
-        for (Strip strip : strips) {
-            strip.send();
-        }
-    }
-
-    private void renderEffect() {
-
-        if (ampEnable) {
-            for (int i = 0; i < strips.size(); i++) {
-                float a = ampRendered[i];
-                Strip strip = strips.get(i);
-
-                float brightness = 1 - ampMod;
-                brightness = brightness + a * ampMod;
-                strip.brightness(brightness * overallbrightness);
-            }
-        }
-
-        //if (selectedEffect == 0) {  //amp
-//            for (int costume = 0; costume < COUNT; costume++) {
-//                costumes[costume].effectSingleColor(color(255 * amp[costume]));
-//            }
-        if (rgbEnable) { // RGB demo fade
-            int color = color(255 * redval, 255 * greenval, 255 * blueval);
-            strips.forEach(e -> e.effectSingleColor(color));
-        }
-
-        if (effect110Value > 0) {
-            effect110Value--;
-            int color = color(255 * ((float) effect110Value / (float) effect110Duration));
-            strips.forEach(costume -> costume.effect110cmLine(color));
-        } else if (effect110Value == 0) {
-            effect110Value--;
-            int color = color(0);
-            strips.forEach(costume -> costume.effect110cmLine(color));
-        }
-
-        if (effectFadeValue > 0) {
-            effectFadeValue--;
-            int color = color(255 * ((float) effectFadeValue / (float) effectFadeDuration));
-            if (selectedEffect == TRIALPRI) {
-                strips.forEach(costume -> costume.effectSymbol(trialSymbol, color));
-            } else if (selectedEffect == KNEE3) {
-                strips.forEach(costume -> costume.effectSymbol(knee3Symbol, color));
-            }
-        } else if (effectFadeValue == 0) {
-            effectFadeValue--;
-            int color = color(0);
-            if (selectedEffect == TRIALPRI | selectedEffect == KNEE3) {
-                strips.forEach(costume -> costume.effectSymbol(trialSymbol, color));
-            }
-        }
-    }
-
     public void keyPressed() {
-        if (selectedEffect == TESTMODE && key == '1') {
-            bang++;
-            bang %= Strip.SEGMENTS;
-            for (Strip strip : strips) {
-                strip.black();
-                strip.setSegmentColor(bang, color(255));
+        if (trinkhalle.isEffect(Effect.TESTMODE)) {
+            if (key == '1') {
+                trinkhalle.testCostumeBang();
             }
-        }
-
-        if (selectedEffect == TRIAL1 || selectedEffect == TRIAL2 || selectedEffect == TRIAL3) {
+        } else if (trinkhalle.isEffect(Effect.TRIAL1, Effect.TRIAL2, Effect.TRIAL3)) {
             if (key == 'm') {
-                mi(selectedEffect, false);
+                trinkhalle.mi(false);
             } else if (key == 'l') {
-                la(selectedEffect, false);
+                trinkhalle.la(false);
             } else if (key == 'd') {
-                doo(selectedEffect, false);
+                trinkhalle.doo(false);
             }
-        }
-
-        if (selectedEffect == KNEE3 || selectedEffect == KNEE3ON) {  // Knee3
-            if (key == '4') {
-                knee3(4);
-            } else if (key == '3') {
-                knee3(3);
-            } else if (key == '2') {
-                knee3(2);
-            } else if (key == '1') {
-                knee3(1);
-            } else {
-                setBlack();
-            }
-        } else if (selectedEffect == TRIALPRI) { // trialPrison/prison
+        } else if (trinkhalle.isEffect(Effect.KNEE3, Effect.KNEE3ON)) {  // Knee3
+            trinkhalle.knee3(key - 48);
+        } else if (trinkhalle.isEffect(Effect.TRIALPRI)) { // trial prison
             switch (key) {
-                case '1': trialPrison(Symbols.RIGHT); break;
-                case '2': trialPrison(Symbols.LEFT); break;
-                case '3': trialPrison(Symbols.BACKSLASH); break;
-                case '4': trialPrison(Symbols.SLASH); break;
-                case '5': trialPrison(Symbols.MINUS); break;
-                case '6': trialPrison(Symbols.SUSPENDERS); break;
-                case '7': trialPrison(Symbols.X); break;
-                case '8': trialPrison(Symbols.UX); break;
-                case '9': trialPrison(Symbols.OFF); break;
+                case '1': trinkhalle.trialPrison(Symbols.RIGHT); break;
+                case '2': trinkhalle.trialPrison(Symbols.LEFT); break;
+                case '3': trinkhalle.trialPrison(Symbols.BACKSLASH); break;
+                case '4': trinkhalle.trialPrison(Symbols.SLASH); break;
+                case '5': trinkhalle.trialPrison(Symbols.MINUS); break;
+                case '6': trinkhalle.trialPrison(Symbols.SUSPENDERS); break;
+                case '7': trinkhalle.trialPrison(Symbols.X); break;
+                case '8': trinkhalle.trialPrison(Symbols.UX); break;
+                case '9': trinkhalle.trialPrison(Symbols.OFF); break;
             }
-        }
-    }
-
-    private void knee3(int num) {
-        for (Strip strip : strips) {
-            strip.effectSingleColor(0);
-        }
-
-        final int color = color(255);
-        if (num == 1) {
-            knee3Symbol = Symbols.UX;
-        } else if (num == 2) {
-            knee3Symbol = Symbols.BACKSLASH;
-        } else if (num == 3) {
-            knee3Symbol = Symbols.SLASH;
-        } else if (num == 4) {
-            knee3Symbol = Symbols.X;
-        }
-
-        strips.forEach(costume -> costume.effectSymbol(knee3Symbol, color));
-        effectFadeValue = effectFadeDuration;
-    }
-
-    private void mi(int milaNumber, boolean off) {
-        milaNumber %= 4;
-        if (milaNumber == TRIAL1) {
-            costumesSopran.forEach(off ? Strip::black : Strip::effectMI);
-            costumesAlt.forEach(off ? Strip::black : Strip::effectMI);
-            costumesBass.forEach(off ? Strip::black : Strip::black);
-            costumesTenor.forEach(off ? Strip::black : Strip::black);
-        } else if (milaNumber == TRIAL2) {
-            costumesAlt.forEach(Strip::black);
-            costumesSopran.forEach(Strip::black);
-        } else if (milaNumber == TRIAL3) {
-            costumesSopran.forEach(off ? Strip::black : Strip::effectMI);
-            costumesAlt.forEach(off ? Strip::black : Strip::effectMI);
-            costumesBass.forEach(off ? Strip::black : Strip::effectDO);
-            costumesTenor.forEach(off ? Strip::black : Strip::effectDO);
-        }
-    }
-
-    private void la(int milaNumber, boolean off) {
-        milaNumber %= 4;
-        if (milaNumber == TRIAL1) {
-            costumesSopran.forEach(off ? Strip::black : Strip::effectLA);
-            costumesAlt.forEach(off ? Strip::black : Strip::effectMI);
-            costumesBass.forEach(Strip::black);
-            costumesTenor.forEach(Strip::black);
-        } else if (milaNumber == TRIAL2) {
-            costumesBass.forEach(off ? Strip::black : Strip::effectLA);
-            costumesTenor.forEach(off ? Strip::black : Strip::effectLA);
-        } else if (milaNumber == TRIAL3) {
-            costumesSopran.forEach(off ? Strip::black : Strip::effectLA);
-            costumesAlt.forEach(off ? Strip::black : Strip::effectMI);
-            costumesBass.forEach(off ? Strip::black : Strip::effectLA);
-            costumesTenor.forEach(off ? Strip::black : Strip::effectLA);
-        }
-    }
-
-    private void doo(int milaNumber, boolean off) {
-        milaNumber %= 4;
-        if (milaNumber == TRIAL2) {
-            costumesBass.forEach(off ? Strip::black : Strip::effectDO);
-            costumesTenor.forEach(off ? Strip::black : Strip::effectDO);
-        } else if (milaNumber == TRIAL3) {
-            costumesSopran.forEach(off ? Strip::black : Strip::effectDO);
-            costumesAlt.forEach(off ? Strip::black : Strip::effectLA);
-            costumesBass.forEach(Strip::black);
-            costumesTenor.forEach(Strip::black);
+        } else if (trinkhalle.isEffect(Effect.DANCE2)) {
+            trinkhalle.dance2(key - 48);
         }
     }
 
@@ -500,39 +282,39 @@ public class MainWindow extends PApplet {
         }
 
         if (bjnote == 35 && bjvelocity == 0) {
-            flash110();
+            trinkhalle.flash110();
         } else if (bjnote == 34 && bjvelocity == 0) {
-            setBlack();
+            trinkhalle.setBlack();
         }
 
-        if (bjvelocity == 0 && selectedEffect == KNEE3 || selectedEffect == KNEE3ON) {
+        if (bjvelocity == 0 && trinkhalle.isEffect(Effect.KNEE3, Effect.KNEE3ON)) {
             switch (bjnote) {
-                case 80: knee3(4); break;
-                case 81: knee3(3); break;
-                case 82: knee3(2); break;
-                case 83: knee3(1); break;
+                case 80: trinkhalle.knee3(4); break;
+                case 81: trinkhalle.knee3(3); break;
+                case 82: trinkhalle.knee3(2); break;
+                case 83: trinkhalle.knee3(1); break;
             }
         }
 
-        if (selectedEffect == TRIAL2 || selectedEffect == TRIAL1 || selectedEffect == TRIAL3) { // Bjarne Fake DO LA
+        if (trinkhalle.isEffect(Effect.TRIAL1, Effect.TRIAL2, Effect.TRIAL3)) { // Bjarne Fake DO LA
             switch (bjnote) {
-                case 40: doo(selectedEffect, bjvelocity == 0); break;
-                case 41: la(selectedEffect, bjvelocity == 0); break;
-                case 42: mi(selectedEffect, bjvelocity == 0); break;
+                case 40: trinkhalle.doo(bjvelocity == 0); break;
+                case 41: trinkhalle.la(bjvelocity == 0); break;
+                case 42: trinkhalle.mi(bjvelocity == 0); break;
             }
         }
 
-        if (bjvelocity == 0 && selectedEffect == TRIALPRI) {
+        if (bjvelocity == 0 && trinkhalle.isEffect(Effect.TRIALPRI)) {
             switch (bjnote) {
-                case 73: trialPrison(Symbols.RIGHT); break;
-                case 74: trialPrison(Symbols.LEFT); break;
-                case 75: trialPrison(Symbols.BACKSLASH); break;
-                case 76: trialPrison(Symbols.SLASH); break;
-                case 89: trialPrison(Symbols.MINUS); break;
-                case 90: trialPrison(Symbols.SUSPENDERS); break;
-                case 91: trialPrison(Symbols.X); break;
-                case 92: trialPrison(Symbols.UX); break;
-                default: trialPrison(Symbols.OFF); break;
+                case 73: trinkhalle.trialPrison(Symbols.RIGHT); break;
+                case 74: trinkhalle.trialPrison(Symbols.LEFT); break;
+                case 75: trinkhalle.trialPrison(Symbols.BACKSLASH); break;
+                case 76: trinkhalle.trialPrison(Symbols.SLASH); break;
+                case 89: trinkhalle.trialPrison(Symbols.MINUS); break;
+                case 90: trinkhalle.trialPrison(Symbols.SUSPENDERS); break;
+                case 91: trinkhalle.trialPrison(Symbols.X); break;
+                case 92: trinkhalle.trialPrison(Symbols.UX); break;
+                default: trinkhalle.trialPrison(Symbols.OFF); break;
             }
         }
     }
@@ -571,89 +353,197 @@ public class MainWindow extends PApplet {
 
     public void controlEvent(ControlEvent theEvent) {
         if (theEvent.isController()) {
-            if (theEvent.getName().startsWith("output")) {
-                int id = theEvent.getId();
-                if (id >= 0 && id < COUNT && strips.get(id) != null) {
-                    strips.get(id).setEnabled(theEvent.getValue() > 0);
+
+            String name = theEvent.getName();
+            float value = theEvent.getValue();
+
+            if (name.startsWith("outputStrip")) {
+                trinkhalle.setOutputEnableStrip(theEvent.getId(), value > 0);
+            } else if (name.startsWith("outputPanzer")) {
+                trinkhalle.setOutputEnablePanzer(theEvent.getId(), value > 0);
+            } else if (name.startsWith("overallbrightness")) {
+                trinkhalle.setBrightness(value);
+                if (midi != null) {
+                    midi.sendControllerChange(0, 3, (int) map(value, 0, 1.0f, 0, 127.0f));
                 }
-            } else if (theEvent.getName().startsWith("overallbrightness")) {
-                strips.forEach(costume -> costume.brightness(theEvent.getValue()));
+            } else if (name.startsWith("attackAudio")) {
+                if (midi != null) {
+                    midi.sendControllerChange(0, 14, (int) map(value, 0, 1.0f, 0, 127.0f));
+                }
+            } else if (name.startsWith("releaseAudio")) {
+                if (midi != null) {
+                    midi.sendControllerChange(0, 15, (int) map(value, 0, 1.0f, 0, 127.0f));
+                }
+            } else if (name.startsWith("ampMod")) {
+                trinkhalle.setAmpModFactor(value);
+                if (midi != null) {
+                    midi.sendControllerChange(0, 12, (int) map(value, 0, 1.0f, 0, 127.0f));
+                }
+            } else if (name.startsWith("effectFadeDuration")) {
+                trinkhalle.setEffectFadeDuration((int) value);
+                if (midi != null) {
+                    midi.sendControllerChange(0, 13, (int) map(value, -1, 126f, 0, 127.0f));
+                }
+            } else if (name.startsWith("attackEffect")) {
+                trinkhalle.setAttack(value);
+            } else if (name.startsWith("releaseEffect")) {
+                trinkhalle.setRelease(value);
+                if (midi != null) {
+                    midi.sendControllerChange(0, 9, (int) map(value, 0, 1.0f, 0, 127.0f));
+                }
+            } else if(name.startsWith("redval") || name.startsWith("greenval") || name.startsWith("blueval")) {
+                trinkhalle.testRGB(color(redval*255, greenval*255, blueval*255));
+
             }
         }
 
         if (theEvent.getName().startsWith("effectRadio")) {
 
-            selectedEffect = (int) theEvent.getValue();
-            setBlack();
+            trinkhalle.setSelectedEffect(Effect.from(theEvent.getValue()));
+            trinkhalle.setBlack();
 
             if (midi != null) { // zurückschalten der Midi Pads wenn man die Radio Buttons drückt
                 for (int i = 36; i < 52; i++) {
                     midi.sendNoteOff(9, i, 0);
                 }
-                switch (selectedEffect) {
+                switch (trinkhalle.getSelectedEffect()) {
                     case TRIAL1: midi.sendNoteOn(9, 48, 10); break;
                     case TRIAL2: midi.sendNoteOn(9, 49, 10); break;
                     case TRIAL3: midi.sendNoteOn(9, 50, 10); break;
-                    case DANCE2: midi.sendNoteOn(9, 51, 10); break;
-                    case KNEE3: midi.sendNoteOn(9, 44, 10); break;
-                    case KNEE3ON: midi.sendNoteOn(9, 45, 10); break;
-                    case TRIALPRI: midi.sendNoteOn(9, 46, 10); break;
-                    case BUILDING: midi.sendNoteOn(9, 47, 10); break;
-                    case KNEE4: midi.sendNoteOn(9, 40, 10); break;
+                    case KNEE3:
+                        midi.sendNoteOn(9, 51, 10);
+                        sldrEffectDuration.setValue(15);
+                        midi.sendControllerChange(0, 13, 14);
+                        break;
+                    case KNEE3ON:
+                        midi.sendNoteOn(9, 44, 10);
+                        sldrEffectDuration.setValue(-1);
+                        midi.sendControllerChange(0, 13, 0);
+                        break;
+                    case TRIALPRI:
+                        midi.sendNoteOn(9, 45, 10);
+                        sldrEffectDuration.setValue(20);
+                        midi.sendControllerChange(0, 13, 19);
+                        break;
+                    case DANCE2: midi.sendNoteOn(9, 46, 10); break;
+                    case KNEE4:
+                        midi.sendNoteOn(9, 47, 10);
+                        trinkhalle.knee4();
+                        break;
+                    case BUILDING:
+                        midi.sendNoteOn(9, 40, 10);
+                        trinkhalle.building();
+                        break;
+
                 }
             }
         }
     }
 
+    private void setEffectRadio(Effect effect) {
+        int i = 0;
+        for(Toggle item: effectRadio.getItems()) {
+            if(effect.toString().equals(item.getAddress().substring(1))) {
+                System.out.println("act: " + i);
+                effectRadio.activate(i);
+                return;
+            }
+            i++;
+        }
+    }
+
     public void noteOn(int channel, int pitch, int velocity) {
-        print("Note On:");
-        print(" Channel:" + channel);
-        print(" Pitch:" + pitch);
-        println(" Velocity:" + velocity);
+        if (midiDebug) {
+            print("Note On:");
+            print(" Channel:" + channel);
+            print(" Pitch:" + pitch);
+            println(" Velocity:" + velocity);
+        }
 
         switch (pitch) {
-            case 36: setBlack(); break;
+            case 36: trinkhalle.setBlack(); break;
             case 37: effectRadio.deactivateAll(); break;
             case 38: ; break;
             case 39: ; break;
-            case 40: effectRadio.activate(5); break;
+            case 40: setEffectRadio(Effect.BUILDING); break;
             case 41: ; break;
             case 42: ; break;
             case 43: ; break;
-            case 44: effectRadio.activate(6); break;   //knee3
-            case 45: effectRadio.activate(7); break;   //knee3on
-            case 46: effectRadio.activate(8); break;   //trialprison
-            case 47: effectRadio.activate(9); break;
-            case 48: effectRadio.activate(1); break;  //trial1
-            case 49: effectRadio.activate(2); break;  //trial2
-            case 50: effectRadio.activate(3); break;  //trial3
-            case 51: effectRadio.activate(4); break;  //dance2
+            case 44: setEffectRadio(Effect.KNEE3ON); break;
+            case 45: setEffectRadio(Effect.TRIALPRI); break;
+            case 46: setEffectRadio(Effect.DANCE2); break;
+            case 47: setEffectRadio(Effect.KNEE4); break;
+            case 48: setEffectRadio(Effect.TRIAL1); break;
+            case 49: setEffectRadio(Effect.TRIAL2); break;
+            case 50: setEffectRadio(Effect.TRIAL3); break;
+            case 51: setEffectRadio(Effect.KNEE3); break;
+        }
+
+        // demo only, trigger auf Pad Bank B
+        if (trinkhalle.isEffect(Effect.TRIALPRI)) {
+            switch (pitch) {
+                case 64: trinkhalle.trialPrison(Symbols.RIGHT); break;
+                case 65: trinkhalle.trialPrison(Symbols.LEFT); break;
+                case 66: trinkhalle.trialPrison(Symbols.BACKSLASH); break;
+                case 67: trinkhalle.trialPrison(Symbols.SLASH); break;
+                case 60: trinkhalle.trialPrison(Symbols.MINUS); break;
+                case 61: trinkhalle.trialPrison(Symbols.SUSPENDERS); break;
+                case 62: trinkhalle.trialPrison(Symbols.X); break;
+                case 63: trinkhalle.trialPrison(Symbols.UX); break;
+                default: trinkhalle.trialPrison(Symbols.OFF); break;
+            }
+        } else if (trinkhalle.isEffect(Effect.TRIAL1, Effect.TRIAL2, Effect.TRIAL3)) {
+            switch (pitch) {
+                case 64: trinkhalle.mi(false); break;
+                case 65: trinkhalle.la(false); break;
+                case 66: trinkhalle.doo(false); break;
+            }
+        } else if (trinkhalle.isEffect(Effect.KNEE3)) {
+            switch (pitch) {
+                case 64: trinkhalle.knee3(1); break;
+                case 65: trinkhalle.knee3(2); break;
+                case 66: trinkhalle.knee3(3); break;
+                case 67: trinkhalle.knee3(4); break;
+            }
         }
     }
 
     public void noteOff(int channel, int pitch, int velocity) {
-
-        if (pitch >= 40 && pitch <= 51) {
+        // set Pads colors
+        if (midi != null && pitch >= 40 && pitch <= 51) {
             for (int i = 40; i <= 51; i++) {
                 midi.sendNoteOff(9, i, 0);
             }
-
             midi.sendNoteOn(9, pitch, 10);
         }
+
+        // demo only, trigger auf Pad Bank B
+        if (trinkhalle.isEffect(Effect.TRIAL1, Effect.TRIAL2, Effect.TRIAL3)) {
+            switch (pitch) {
+                case 64: trinkhalle.mi(true); break;
+                case 65: trinkhalle.la(true); break;
+                case 66: trinkhalle.doo(true); break;
+            }
+        }
+
     }
 
     public void controllerChange(int channel, int number, int value) {
-        print("Controller Change:");
-        print(" Channel:" + channel);
-        print(" Number:" + number);
-        println(" Value:" + value);
+        if (midiDebug) {
+            print("Controller Change:");
+            print(" Channel:" + channel);
+            print(" Number:" + number);
+            println(" Value:" + value);
+        }
 
         if (number == 3) {
             sldrOverallBrightness.setValue(value / 127.0f);
+        } else if (number == 9) {
+            sldrReleaseEffect.setValue(value / 127.0f);
         } else if (number == 12) {
             sldrAmpMod.setValue(value / 127.0f);
         } else if (number == 13) {
-            sldrEffectDuration.setValue(map(value, 0, 127, 1, 200));
+            sldrEffectDuration.setValue(map(value, 0, 127, -1, 126));
         } else if (number == 14) {
             sldrAttackAudio.setValue(value / 127.0f);
         } else if (number == 15) {

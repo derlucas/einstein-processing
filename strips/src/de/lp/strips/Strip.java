@@ -13,9 +13,14 @@ public class Strip {
     private final UDP udp;
     int ledsCount;
     private float outputRGB[][];
+    private float setRGB[][];
     private boolean enableOutput = false;
     private float brightness = 1.0f;
     private boolean blackout = false;
+    private final String label;
+    private float attack = 1.0f;
+    private float release = 1.0f;
+    private long fadetimer;
 
     public Strip(PApplet base, UDP udp, String ipAddress, int segmentation[][], int ledsCount) {
         this.base = base;
@@ -23,22 +28,73 @@ public class Strip {
         this.udp = udp;
         setLedCount(ledsCount);
         this.segmentation = segmentation;
+        this.label = this.getClass().getSimpleName().substring(5);
     }
 
     private void setLedCount(int count) {
         this.ledsCount = count;
+        setRGB = new float[ledsCount][3];
         outputRGB = new float[ledsCount][3];
         for (int led = 0; led < ledsCount; led++) {
             for (int color = 0; color < 3; color++) {
+                setRGB[led][color] = 0;
                 outputRGB[led][color] = 0;
             }
         }
     }
 
     void setLedColor(int led, int color) {
-        outputRGB[led][0] = base.red(color) / 255.0f;
-        outputRGB[led][1] = base.green(color) / 255.0f;
-        outputRGB[led][2] = base.blue(color) / 255.0f;
+        setRGB[led][0] = base.red(color) / 255.0f;
+        setRGB[led][1] = base.green(color) / 255.0f;
+        setRGB[led][2] = base.blue(color) / 255.0f;
+    }
+
+    public void setAttack(float attack) {
+        this.attack = attack;
+    }
+
+    public void setRelease(float release) {
+        this.release = release;
+    }
+
+    public void render() {
+
+        if (attack >= 0.99f && release >= 0.99f) {
+            // direct switching
+            for (int led = 0; led < ledsCount; led++) {
+                for (int color = 0; color < 3; color++) {
+                    outputRGB[led][color] = setRGB[led][color];
+                }
+            }
+        }
+        else if (base.millis() - fadetimer > 10) {
+            fadedelta();
+            fadetimer = base.millis();
+        }
+    }
+
+    private void fadedelta() {
+        for (int i = 0; i < ledsCount; i++) {
+            for (int color = 0; color < 3; color++) {
+
+                float diff = outputRGB[i][color] - setRGB[i][color];
+
+                if (Math.abs(diff) > 0.01) {
+                    if (diff > 0) {
+                        outputRGB[i][color] -= diff * release;
+                        if (outputRGB[i][color] > 1.0f) {
+                            outputRGB[i][color] = 1.0f;
+                        }
+                    }
+                    else {
+                        outputRGB[i][color] -= diff * attack;
+                        if (outputRGB[i][color] < 0.0f) {
+                            outputRGB[i][color] = 0.0f;
+                        }
+                    }
+                }
+            }
+        }
     }
 
     public void display() {
@@ -55,6 +111,9 @@ public class Strip {
                 ledId++;
             }
         }
+
+        base.fill(255);
+        base.text(label, 1, 130);
     }
 
     public void setSegmentColor(int segment, int color) {
@@ -71,14 +130,11 @@ public class Strip {
         this.enableOutput = enabled;
     }
 
-    public void brightness(float brightness) {
-        if (brightness > 1.0f || brightness < 0.0f) {
-            return;
-        }
-        this.brightness = brightness;
+    public void setBrightness(float brightness) {
+        this.brightness = PApplet.constrain(brightness, 0.0f, 1.0f);
     }
 
-    public void blackout(boolean bo) {
+    public void setBlackout(boolean bo) {
         this.blackout = bo;
     }
 
