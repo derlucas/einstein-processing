@@ -43,8 +43,6 @@ public class Trinkhalle {
     private int stripsTestBang = 0;
     private Symbols effectSymbol = Symbols.OFF;
 
-
-
     Trinkhalle(MainWindow mainWindow) {
         this.base = mainWindow;
         this.udp = new UDP(this, 2102);
@@ -114,7 +112,6 @@ public class Trinkhalle {
         }
         return false;
     }
-
 
     void flash110() {
         int color = base.color(255);
@@ -240,6 +237,22 @@ public class Trinkhalle {
         panzers.forEach(panzer -> panzer.effectSingleColor(color));
     }
 
+    void weissistalles(int farbe) {
+        // weiss, gruen, rot, violett, gelb, lila
+        // 0,1,2,3,4,5
+        int color;
+        switch (farbe) {
+            case 0: color = base.color(255); break;
+            case 1: color = base.color(0,255,0); break;
+            case 2: color = base.color(255,0,0); break;
+            case 3: color = base.color(0,0,255); break;
+            case 4: color = base.color(255,255,0); break;
+            case 5: color = base.color(255,0,255); break;
+            default: color = 0;
+        }
+        panzers.forEach(panzer -> panzer.effectSingleColor(color));
+    }
+
     void testCostumeBang() {
         stripsTestBang++;
         stripsTestBang %= Strip.SEGMENTS;
@@ -284,12 +297,6 @@ public class Trinkhalle {
             panzer.setBrightness(brightness * overallbrightness);
             panzer.render();
         }
-
-
-        /*if (rgbEnable) { // RGB demo fade
-            int color = color(255 * redval, 255 * greenval, 255 * blueval);
-            strips.forEach(e -> e.effectSingleColor(color));
-        } */
 
         if (effect110Value > 0) {
             effect110Value--;

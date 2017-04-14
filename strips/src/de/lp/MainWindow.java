@@ -15,7 +15,6 @@ public class MainWindow extends PApplet {
     private static int SENDDELAY = 40;
     private static final int COUNT = 12;
 
-
     private float preAmp = 1.0f;
     private float amp[] = new float[12];
     private float ampRendered[] = new float[12];
@@ -29,15 +28,12 @@ public class MainWindow extends PApplet {
     private float blueval;
     private long millisDataSend;
     private long millisAudioRender;
-
-    private boolean rgbEnable = false;
     private boolean midiEnable = true;
+    private boolean midiDebug;
 
     private float attackAudio = 1.0f;
     private float releaseAudio = 1.0f;
 
-    private int selectedEffect;
-    private int bang = 0;
     private MidiBus midi;
     private Slider sldrOverallBrightness;
     private Slider sldrAttackAudio;
@@ -47,7 +43,6 @@ public class MainWindow extends PApplet {
     private Slider sldrAmpMod;
     private Slider sldrEffectDuration;
     private RadioButton effectRadio;
-    private boolean midiDebug;
     private Trinkhalle trinkhalle;
 
     public void settings() {
@@ -112,14 +107,13 @@ public class MainWindow extends PApplet {
         midi.sendControllerChange(0, 3, 127 / 2); // brightness
         midi.sendControllerChange(0, 14, 127);  // sync attack and release audio knobs
         midi.sendControllerChange(0, 15, 127);
-        midi.sendControllerChange(0, 12, 0);  // ampMod
-        midi.sendControllerChange(0, 13, 11);  // effectFadeDuration
-        midi.sendControllerChange(0, 9, 127);  // releaseEffect
+        midi.sendControllerChange(0, 12, 0);    // ampMod
+        midi.sendControllerChange(0, 13, 11);   // effectFadeDuration
+        midi.sendControllerChange(0, 9, 127);   // releaseEffect
 
         surface.setTitle("Costumes");
         textSize(11);
     }
-
 
     public void blackout(boolean bo) {      // function for the ControlP5 Toggle
         if (this.blackout != bo && bo) {
@@ -165,9 +159,10 @@ public class MainWindow extends PApplet {
             millisDataSend = System.currentTimeMillis();
             trinkhalle.send();
         }
+    }
 
-        fill(255);
-        text("bang: " + bang, 210, 50);
+    public void flash110() {
+        trinkhalle.flash110();
     }
 
     private void fadeAudio() {
@@ -253,6 +248,11 @@ public class MainWindow extends PApplet {
             System.out.println("organ " + note + " modnote: " + noteModulo + " oct: " + octave + " vel: " + velocity);
         }
 
+        if(trinkhalle.isEffect(Effect.DANCE2)) {
+            // Orgel D E F auf Panzer
+            //trinkhalle.dance2();
+        }
+
         /*if (selectedEffect == TRIAL1) {  // mi la do la  MILA1
             if (noteModulo == 4 && octave == 5) {
                 mi(selectedEffect, !noteOn);
@@ -301,6 +301,20 @@ public class MainWindow extends PApplet {
                 case 40: trinkhalle.doo(bjvelocity == 0); break;
                 case 41: trinkhalle.la(bjvelocity == 0); break;
                 case 42: trinkhalle.mi(bjvelocity == 0); break;
+            }
+        }
+
+        if(bjvelocity == 0 && trinkhalle.isEffect(Effect.DANCE2)) {
+            switch (bjnote) {
+                case 73: trinkhalle.weissistalles(0); break;
+                case 74: trinkhalle.weissistalles(1); break;
+                case 75: trinkhalle.weissistalles(2); break;
+                case 76: trinkhalle.weissistalles(3); break;
+                case 89: trinkhalle.weissistalles(4); break;
+                case 90: trinkhalle.weissistalles(5); break;
+                case 91: trinkhalle.weissistalles(6); break;
+                case 92: trinkhalle.weissistalles(6); break;
+                default: trinkhalle.weissistalles(6); break;
             }
         }
 
@@ -425,7 +439,9 @@ public class MainWindow extends PApplet {
                         sldrEffectDuration.setValue(20);
                         midi.sendControllerChange(0, 13, 19);
                         break;
-                    case DANCE2: midi.sendNoteOn(9, 46, 10); break;
+                    case DANCE2:
+                        midi.sendNoteOn(9, 46, 10);
+                        break;
                     case KNEE4:
                         midi.sendNoteOn(9, 47, 10);
                         trinkhalle.knee4();
@@ -504,6 +520,18 @@ public class MainWindow extends PApplet {
                 case 65: trinkhalle.knee3(2); break;
                 case 66: trinkhalle.knee3(3); break;
                 case 67: trinkhalle.knee3(4); break;
+            }
+        } else if (trinkhalle.isEffect(Effect.DANCE2)) {
+            switch (pitch) {
+                case 64: trinkhalle.weissistalles(0); break;
+                case 65: trinkhalle.weissistalles(1); break;
+                case 66: trinkhalle.weissistalles(2); break;
+                case 67: trinkhalle.weissistalles(3); break;
+                case 60: trinkhalle.weissistalles(4); break;
+                case 61: trinkhalle.weissistalles(5); break;
+                case 62: trinkhalle.weissistalles(6); break;
+                case 63: trinkhalle.weissistalles(6); break;
+                default: trinkhalle.weissistalles(6); break;
             }
         }
     }
