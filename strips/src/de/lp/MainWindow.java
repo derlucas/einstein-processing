@@ -54,7 +54,7 @@ public class MainWindow extends PApplet {
 
         MidiBus.list();
 
-        new OscP5(this, 2002);
+        new OscP5(this, 6000);
         ControlP5 cp5 = new ControlP5(this);
         trinkhalle = new Trinkhalle(this);
 
@@ -362,6 +362,15 @@ public class MainWindow extends PApplet {
             oscOrgel(msg);
         } else if (msg.checkAddrPattern("/bjmidi") && midiEnable) {
             oscBjarne(msg);
+        } else if(msg.checkAddrPattern("/midi/QX61_MIDI_1/0")) {
+            boolean noteOn = "note_on".equals(msg.get(0).stringValue());
+            note = msg.get(1).intValue();
+            velocity = msg.get(2).intValue();
+            if(noteOn) {
+                System.out.println("note: " + note + " vel: " + velocity);
+            }
+        } else {
+            System.out.println("uknown OSC address " + addr);
         }
     }
 
