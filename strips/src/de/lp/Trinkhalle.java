@@ -198,6 +198,8 @@ public class Trinkhalle {
 
     void dance2(int num) {
 
+        // was soll beim start von Dance kommen?
+
         //panzers.forEach(Panzer::black);
         final int sopran;
         final int tenor;
@@ -213,6 +215,8 @@ public class Trinkhalle {
         } else if (num == 3) {              // F von Orgel
             sopran = tenor = base.color(0, 255, 0);
             alt = bass = base.color(0, 0, 255);
+        } else if (num == 4) {              // F von Orgel
+            sopran = tenor = alt = bass = base.color(255,0,0);
         } else {
             sopran = tenor = alt = bass = 0;
         }
@@ -222,6 +226,11 @@ public class Trinkhalle {
         panzersAlt.forEach(panzer -> panzer.effectSingleColor(alt));
         panzersBass.forEach(panzer -> panzer.effectSingleColor(bass));
 
+    }
+
+    void dance2start() {
+        int color = base.color(255, 0, 0);
+        panzers.forEach(panzer -> panzer.effectSingleColor(color));
     }
 
     void knee4() {

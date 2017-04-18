@@ -115,7 +115,7 @@ public class MainWindow extends PApplet {
         textSize(11);
     }
 
-    public void blackout(boolean bo) {      // function for the ControlP5 Toggle
+    public void setBlackout(boolean bo) {      // function for the ControlP5 Toggle
         if (this.blackout != bo && bo) {
             trinkhalle.setBlack();
         }
@@ -248,10 +248,10 @@ public class MainWindow extends PApplet {
             System.out.println("organ " + note + " modnote: " + noteModulo + " oct: " + octave + " vel: " + velocity);
         }
 
-        if(trinkhalle.isEffect(Effect.DANCE2)) {
-            // Orgel D E F auf Panzer
-            //trinkhalle.dance2();
-        }
+//        if(trinkhalle.isEffect(Effect.DANCE2)) {
+//            // Orgel D E F auf Panzer
+//            //trinkhalle.dance2();
+//        }
 
         /*if (selectedEffect == TRIAL1) {  // mi la do la  MILA1
             if (noteModulo == 4 && octave == 5) {
@@ -303,20 +303,20 @@ public class MainWindow extends PApplet {
                 case 42: trinkhalle.mi(bjvelocity == 0); break;
             }
         }
-
-        if(bjvelocity == 0 && trinkhalle.isEffect(Effect.DANCE2)) {
-            switch (bjnote) {
-                case 73: trinkhalle.weissistalles(0); break;
-                case 74: trinkhalle.weissistalles(1); break;
-                case 75: trinkhalle.weissistalles(2); break;
-                case 76: trinkhalle.weissistalles(3); break;
-                case 89: trinkhalle.weissistalles(4); break;
-                case 90: trinkhalle.weissistalles(5); break;
-                case 91: trinkhalle.weissistalles(6); break;
-                case 92: trinkhalle.weissistalles(6); break;
-                default: trinkhalle.weissistalles(6); break;
-            }
-        }
+//
+//        if(bjvelocity == 0 && trinkhalle.isEffect(Effect.DANCE2)) {
+//            switch (bjnote) {
+//                case 73: trinkhalle.weissistalles(0); break;
+//                case 74: trinkhalle.weissistalles(1); break;
+//                case 75: trinkhalle.weissistalles(2); break;
+//                case 76: trinkhalle.weissistalles(3); break;
+//                case 89: trinkhalle.weissistalles(4); break;
+//                case 90: trinkhalle.weissistalles(5); break;
+//                case 91: trinkhalle.weissistalles(6); break;
+//                case 92: trinkhalle.weissistalles(6); break;
+//                default: trinkhalle.weissistalles(6); break;
+//            }
+//        }
 
         if (bjvelocity == 0 && trinkhalle.isEffect(Effect.TRIALPRI)) {
             switch (bjnote) {
@@ -437,11 +437,13 @@ public class MainWindow extends PApplet {
                         midi.sendNoteOn(9, 51, 10);
                         sldrEffectDuration.setValue(15);
                         midi.sendControllerChange(0, 13, 14);
+                        sldrAmpMod.setValue(0.2f);
                         break;
                     case KNEE3ON:
                         midi.sendNoteOn(9, 44, 10);
                         sldrEffectDuration.setValue(-1);
                         midi.sendControllerChange(0, 13, 0);
+                        sldrAmpMod.setValue(1.0f);
                         break;
                     case TRIALPRI:
                         midi.sendNoteOn(9, 45, 10);
@@ -450,6 +452,11 @@ public class MainWindow extends PApplet {
                         break;
                     case DANCE2:
                         midi.sendNoteOn(9, 46, 10);
+                        sldrAmpMod.setValue(0.22f);
+                        sldrReleaseEffect.setValue(1.0f);
+                        sldrAttackAudio.setValue(0.22f);
+                        sldrReleaseAudio.setValue(0.17f);
+                        trinkhalle.dance2start();   // rot als start setzen
                         break;
                     case KNEE4:
                         midi.sendNoteOn(9, 47, 10);
@@ -469,7 +476,6 @@ public class MainWindow extends PApplet {
         int i = 0;
         for(Toggle item: effectRadio.getItems()) {
             if(effect.toString().equals(item.getAddress().substring(1))) {
-                System.out.println("act: " + i);
                 effectRadio.activate(i);
                 return;
             }
@@ -540,7 +546,6 @@ public class MainWindow extends PApplet {
                 case 61: trinkhalle.weissistalles(5); break;
                 case 62: trinkhalle.weissistalles(6); break;
                 case 63: trinkhalle.weissistalles(6); break;
-                default: trinkhalle.weissistalles(6); break;
             }
         }
     }
