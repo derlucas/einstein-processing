@@ -303,20 +303,18 @@ public class MainWindow extends PApplet {
                 case 42: trinkhalle.mi(bjvelocity == 0); break;
             }
         }
-//
-//        if(bjvelocity == 0 && trinkhalle.isEffect(Effect.DANCE2)) {
-//            switch (bjnote) {
-//                case 73: trinkhalle.weissistalles(0); break;
-//                case 74: trinkhalle.weissistalles(1); break;
-//                case 75: trinkhalle.weissistalles(2); break;
-//                case 76: trinkhalle.weissistalles(3); break;
-//                case 89: trinkhalle.weissistalles(4); break;
-//                case 90: trinkhalle.weissistalles(5); break;
-//                case 91: trinkhalle.weissistalles(6); break;
-//                case 92: trinkhalle.weissistalles(6); break;
-//                default: trinkhalle.weissistalles(6); break;
-//            }
-//        }
+
+        if(bjvelocity == 0 && trinkhalle.isEffect(Effect.DANCE2)) {
+            switch (bjnote) {
+                case 31: trinkhalle.weissistalles(0); break;
+                case 28: trinkhalle.weissistalles(1); break;
+                case 32: trinkhalle.weissistalles(2); break;
+                case 29: trinkhalle.weissistalles(3); break;
+                case 33: trinkhalle.weissistalles(4); break;
+                case 30: trinkhalle.weissistalles(5); break;
+                default: trinkhalle.weissistalles(6); break;
+            }
+        }
 
         if (bjvelocity == 0 && trinkhalle.isEffect(Effect.TRIALPRI)) {
             switch (bjnote) {
@@ -443,7 +441,7 @@ public class MainWindow extends PApplet {
                         midi.sendNoteOn(9, 44, 10);
                         sldrEffectDuration.setValue(-1);
                         midi.sendControllerChange(0, 13, 0);
-                        sldrAmpMod.setValue(1.0f);
+                        sldrAmpMod.setValue(0.7f);
                         break;
                     case TRIALPRI:
                         midi.sendNoteOn(9, 45, 10);
