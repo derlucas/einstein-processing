@@ -96,7 +96,7 @@ public class Panzer {
 
             float diff = outputValues[i] - setValues[i];
 
-            if (Math.abs(diff) > 0.01) {
+            if (Math.abs(diff) > 0.001) {
                 if (diff > 0) {
                     outputValues[i] -= diff * release;
                     if (outputValues[i] > 1.0f) {

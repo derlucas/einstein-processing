@@ -79,7 +79,7 @@ public class Strip {
 
                 float diff = outputRGB[i][color] - setRGB[i][color];
 
-                if (Math.abs(diff) > 0.01) {
+                if (Math.abs(diff) > 0.001) {
                     if (diff > 0) {
                         outputRGB[i][color] -= diff * release;
                         if (outputRGB[i][color] > 1.0f) {
@@ -174,7 +174,7 @@ public class Strip {
     public void effectMI() {
         effectSingleColor(0);
         // mi   unten linie
-        int color = base.color(0,0,255);
+        int color = base.color(0,76,255);
         setSegmentColor(2,  color);
         setSegmentColor(12, color);
         setSegmentColor(13, color);
@@ -184,7 +184,7 @@ public class Strip {
         effectSingleColor(0);
 
         // hosenträger
-        int color = base.color(0,0,255);
+        int color = base.color(0,76,255);
         setSegmentColor(0,  color);
         setSegmentColor(1,  color);
         setSegmentColor(16, color);
@@ -194,7 +194,7 @@ public class Strip {
     public void effectDO() {
         effectSingleColor(0);
         // X
-        int color = base.color(255,0,0);
+        int color = base.color(255,5,0);
         setSegmentColor(6,  color);
         setSegmentColor(7,  color);
         setSegmentColor(4,  color);

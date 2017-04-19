@@ -278,7 +278,6 @@ public class Trinkhalle {
 
     void testRGB(int color) {
         if(isEffect(Effect.RGB)) {
-            System.out.println("color: " + color);
             for (Strip strip : strips) {
                 strip.effectSingleColor(color);
             }
@@ -293,18 +292,14 @@ public class Trinkhalle {
         // Amp calculations
         for (int i = 0; i < strips.size(); i++) {
             Strip strip = strips.get(i);
-            float brightness = 1 - ampModFactor;
-            brightness = brightness + ampRendered[i] * ampModFactor;
-            strip.setBrightness(brightness * overallbrightness);
-            strip.render();
-        }
-
-        for (int i = 0; i < panzers.size(); i++) {
             Panzer panzer = panzers.get(i);
             float brightness = 1 - ampModFactor;
             brightness = brightness + ampRendered[i] * ampModFactor;
+            strip.setBrightness(brightness * overallbrightness);
             panzer.setBrightness(brightness * overallbrightness);
+            strip.render();
             panzer.render();
+
         }
 
         if (effect110Value > 0) {

@@ -65,7 +65,7 @@ public class MainWindow extends PApplet {
 
         int y = 10;
         sldrOverallBrightness = cp5.addSlider("overallbrightness").setPosition(10, y).setSize(100, 10).setRange(0, 1.0f).setValue(0.5f);
-        cp5.addSlider("preAmp").setPosition(10, y += 15).setSize(100, 10).setRange(0, 100.0f);
+        cp5.addSlider("preAmp").setPosition(10, y += 15).setSize(100, 10).setRange(0, 40.0f).setValue(10.0f);
         y += 10;
         sldrAttackAudio = cp5.addSlider("attackAudio").setPosition(10, y += 15).setSize(100, 10).setRange(0.0f, 1.0f).setValue(1.0f);
         sldrReleaseAudio = cp5.addSlider("releaseAudio").setPosition(10, y += 15).setSize(100, 10).setRange(0.0f, 1.0f).setValue(1.0f);
@@ -83,21 +83,15 @@ public class MainWindow extends PApplet {
         cp5.addToggle("midiEnable").setPosition(210, 70).setSize(30, 15).setLabel("MIDI");
         cp5.addToggle("midiDebug").setPosition(210, 110).setSize(30, 15).setId(12).setValue(false).setLabel("MIDI DBG");
 
-        effectRadio = cp5.addRadioButton("effectRadio").setPosition(300, 160).setSize(30, 15).setColorForeground(color(120))
-                .setColorActive(color(255)).setColorLabel(color(255)).setItemsPerRow(5)
-                .setSpacingColumn(60).setSpacingRow(10)
-                .addItem("TRIAL1", Effect.TRIAL1.getValue())
-                .addItem("TRIAL2", Effect.TRIAL2.getValue())
-                .addItem("TRIAL3", Effect.TRIAL3.getValue())
-                .addItem("KNEE3", Effect.KNEE3.getValue())
-                .addItem("KNEE3ON", Effect.KNEE3ON.getValue())
-                .addItem("TRIALPRI", Effect.TRIALPRI.getValue())
-                .addItem("DANCE2", Effect.DANCE2.getValue())
-                .addItem("KNEE4", Effect.KNEE4.getValue())
-                .addItem("BUILDING", Effect.BUILDING.getValue())
-                .addItem("TEST", Effect.TESTMODE.getValue())
-                .addItem("RGB", Effect.RGB.getValue())
-                .deactivateAll();
+        effectRadio = cp5.addRadioButton("effectRadio").setPosition(300, 160).setSize(30, 15)
+                .setColorForeground(color(120)).setColorActive(color(255)).setColorLabel(color(255))
+                .setItemsPerRow(5).setSpacingColumn(60).setSpacingRow(10)
+                .addItem("TRIAL1", Effect.TRIAL1.getValue()).addItem("TRIAL2", Effect.TRIAL2.getValue())
+                .addItem("TRIAL3", Effect.TRIAL3.getValue()).addItem("KNEE3", Effect.KNEE3.getValue())
+                .addItem("KNEE3ON", Effect.KNEE3ON.getValue()).addItem("TRIALPRI", Effect.TRIALPRI.getValue())
+                .addItem("DANCE2", Effect.DANCE2.getValue()).addItem("KNEE4", Effect.KNEE4.getValue())
+                .addItem("BUILDING", Effect.BUILDING.getValue()).addItem("TEST", Effect.TESTMODE.getValue())
+                .addItem("RGB", Effect.RGB.getValue()).deactivateAll();
 
         cp5.addBang("setBlack").setPosition(250, 110).setSize(30, 30).setLabel("BLK");
         cp5.addBang("flash110").setPosition(250, 160).setSize(30, 30).setLabel("F110");
@@ -121,6 +115,10 @@ public class MainWindow extends PApplet {
         }
         this.blackout = bo;
         trinkhalle.setBlackout(bo);
+    }
+
+    public void flash110() {                   // function for the ControlP5 Button
+        trinkhalle.flash110();
     }
 
     public void draw() {
@@ -159,10 +157,6 @@ public class MainWindow extends PApplet {
             millisDataSend = System.currentTimeMillis();
             trinkhalle.send();
         }
-    }
-
-    public void flash110() {
-        trinkhalle.flash110();
     }
 
     private void fadeAudio() {
