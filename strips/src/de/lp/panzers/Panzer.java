@@ -48,29 +48,28 @@ public class Panzer {
 
         int j = 0;
         base.fill(255 * outputValues[j] * brightness, 0, 0);
-        base.stroke(255 * outputValues[j] * brightness, 0, 0);
-        base.rect(j * 10, 0, 10, 30);
+        base.stroke(155 * outputValues[j], 0, 0);
+        base.rect(j * 10 + 1, 1, 8, 28);
         j++;
 
-        base.fill(0, 255 * outputValues[j] * brightness, 0);
-        base.stroke(0, 255 * outputValues[j] * brightness, 0);
-        base.rect(j * 10, 0, 10, 30);
-
-        j++;
-        base.fill(0, 0, 255 * outputValues[j] * brightness);
-        base.stroke(0, 0, 255 * outputValues[j] * brightness);
-        base.rect(j * 10, 0, 10, 30);
+        base.stroke(0, 255 * outputValues[j], 0);
+        base.fill(0, 155 * outputValues[j] * brightness, 0);
+        base.rect(j * 10 + 1, 1, 8, 28);
 
         j++;
         base.fill(0, 0, 255 * outputValues[j] * brightness);
-        base.stroke(0, 0, 255 * outputValues[j] * brightness);
-        base.rect(j * 10, 0, 10, 30);
+        base.stroke(0, 0, 155 * outputValues[j]);
+        base.rect(j * 10 + 1, 1, 8, 28);
 
         j++;
         base.fill(0, 0, 255 * outputValues[j] * brightness);
-        base.stroke(0, 0, 255 * outputValues[j] * brightness);
-        base.rect(j * 10, 0, 10, 30);
+        base.stroke(0, 0, 155 * outputValues[j]);
+        base.rect(j * 10 + 1, 1, 8, 28);
 
+        j++;
+        base.fill(0, 0, 255 * outputValues[j] * brightness);
+        base.stroke(0, 0, 155 * outputValues[j]);
+        base.rect(j * 10 + 1, 1, 8, 28);
 
         base.stroke(50);
         base.noFill();

@@ -132,7 +132,13 @@ public class MainWindow extends PApplet {
         for (int i = 0; i < COUNT; i++) {
             fill(255);
             text(String.format("%.2f", amp[i]), 300 + i * 40, 20);
-            fill(amp[i] * 255);
+
+            if(amp[i] > 0.95) {
+                fill(amp[i] * 255, 0, 0);
+            } else {
+                fill(amp[i] * 255);
+            }
+
             rect(300 + i * 40, 32, 30, 15);
             fill(ampRendered[i] * 255);
             rect(300 + i * 40, 32 + 15, 30, 15);
