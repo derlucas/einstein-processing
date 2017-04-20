@@ -10,9 +10,9 @@ import java.awt.*;
 
 public class MainWindow extends PApplet {
 
-    private static final String ORGAN2 = "/midi/MIDISPORT_2x2_Anniv_MIDI_1/0";
-    private static final String ORGAN1 = "/midi/MIDISPORT_2x2_Anniv_MIDI_2/5";
-    private static int SENDDELAY = 40;
+    private static final String ORGAN1 = "/midi/Kurzweil_Forte_MIDI_1/5";
+    private static final String ORGAN2 = "/midi/MIDISPORT_2x2_Anniv_MIDI_2";
+    private static int SENDDELAY = 60;
     private static final int COUNT = 12;
 
     private float preAmp = 1.0f;
@@ -29,6 +29,7 @@ public class MainWindow extends PApplet {
     private long millisDataSend;
     private long millisAudioRender;
     private boolean midiEnable = true;
+    private boolean midiBJEnable = true;
     private boolean midiDebug;
 
     private float attackAudio = 1.0f;
@@ -81,7 +82,8 @@ public class MainWindow extends PApplet {
 
         cp5.addToggle("setBlackout").setPosition(250, 70).setSize(30, 15).setId(12).setValue(false).setLabel("BO");
         cp5.addToggle("midiEnable").setPosition(210, 70).setSize(30, 15).setLabel("MIDI");
-        cp5.addToggle("midiDebug").setPosition(210, 110).setSize(30, 15).setId(12).setValue(false).setLabel("MIDI DBG");
+        cp5.addToggle("midiBJEnable").setPosition(210, 110).setSize(30, 15).setLabel("MIDI BJ");
+        cp5.addToggle("midiDebug").setPosition(210, 150).setSize(30, 15).setId(12).setValue(false).setLabel("MIDI DBG");
 
         effectRadio = cp5.addRadioButton("effectRadio").setPosition(300, 160).setSize(30, 15)
                 .setColorForeground(color(120)).setColorActive(color(255)).setColorLabel(color(255))
@@ -133,7 +135,7 @@ public class MainWindow extends PApplet {
             fill(255);
             text(String.format("%.2f", amp[i]), 300 + i * 40, 20);
 
-            if(amp[i] > 0.95) {
+            if (amp[i] > 0.95) {
                 fill(amp[i] * 255, 0, 0);
             } else {
                 fill(amp[i] * 255);
@@ -244,7 +246,7 @@ public class MainWindow extends PApplet {
         int noteModulo = note % 12;
         int octave = note / 12;
 
-        if (midiDebug) {
+        if (midiDebug && noteOn) {
             System.out.println("organ " + note + " modnote: " + noteModulo + " oct: " + octave + " vel: " + velocity);
         }
 
@@ -253,31 +255,32 @@ public class MainWindow extends PApplet {
 //            //trinkhalle.dance2();
 //        }
 
-        /*if (selectedEffect == TRIAL1) {  // mi la do la  MILA1
-            if (noteModulo == 4 && octave == 5) {
-                mi(selectedEffect, !noteOn);
-            } else if (noteModulo == 4 && octave == 5) {
-                la(selectedEffect, !noteOn);
+        if (trinkhalle.isEffect(Effect.TRIAL1)) {  // mi la do la  MILA1
+            if (noteModulo == 4 && octave == 3) {
+                trinkhalle.mi(false);
+            } else if (noteModulo == 9 && octave == 3) {
+                trinkhalle.la(false);
             }
-        } else if (selectedEffect == TRIAL2) {
+        } else if (trinkhalle.isEffect(Effect.TRIAL2)) {
             // gesteuert von Bjarne oder via Tonerkennung
 
-        } else if (selectedEffect == TRIAL3) {
-            if (noteModulo == 4 && octave == 5) {   // 65
-                mi(selectedEffect, !noteOn);
-            } else if (noteModulo == 4 && octave == 5) {    // 72
-                la(selectedEffect, !noteOn);
-            } else if (noteModulo == 9 && octave == 5) {   // TODO note finden
-                doo(selectedEffect, !noteOn);
+
+        } else if (trinkhalle.isEffect(Effect.TRIAL3)) {
+            if (noteModulo == 4 && octave == 3) {           // 40
+                trinkhalle.mi(false);
+            } else if (noteModulo == 9 && octave == 3) {    // 45
+                trinkhalle.la(false);
+            } else if (noteModulo == 0 && octave == 4) {    // 48
+                trinkhalle.doo(false);
             }
-        } */
+        }
 
     }
 
     private void oscBjarne(OscMessage msg) {
         bjnote = msg.get(0).intValue();
         bjvelocity = msg.get(1).intValue();
-        if (midiDebug) {
+        if (midiDebug && bjvelocity != 0) {
             System.out.println("bjmidi " + bjnote + " vel:" + bjvelocity);
         }
 
@@ -304,7 +307,7 @@ public class MainWindow extends PApplet {
             }
         }
 
-        if(bjvelocity == 0 && trinkhalle.isEffect(Effect.DANCE2)) {
+        if (bjvelocity == 0 && trinkhalle.isEffect(Effect.DANCE2)) {
             switch (bjnote) {
                 case 31: trinkhalle.weissistalles(0); break;
                 case 28: trinkhalle.weissistalles(1); break;
@@ -356,15 +359,17 @@ public class MainWindow extends PApplet {
 //                }
 //            }
 
-        } else if ((msg.checkAddrPattern(ORGAN1) || msg.checkAddrPattern(ORGAN2)) && midiEnable) {
-            oscOrgel(msg);
-        } else if (msg.checkAddrPattern("/bjmidi") && midiEnable) {
+        } else if ((msg.checkAddrPattern(ORGAN1) || msg.checkAddrPattern(ORGAN2))) {
+            if (midiEnable) {
+                oscOrgel(msg);
+            }
+        } else if (msg.checkAddrPattern("/bjmidi") && midiBJEnable) {
             oscBjarne(msg);
-        } else if(msg.checkAddrPattern("/midi/QX61_MIDI_1/0")) {
+        } else if (msg.checkAddrPattern("/midi/QX61_MIDI_1/0")) {
             boolean noteOn = "note_on".equals(msg.get(0).stringValue());
             note = msg.get(1).intValue();
             velocity = msg.get(2).intValue();
-            if(noteOn) {
+            if (noteOn) {
                 System.out.println("note: " + note + " vel: " + velocity);
             }
         } else {
@@ -412,8 +417,8 @@ public class MainWindow extends PApplet {
                 if (midi != null) {
                     midi.sendControllerChange(0, 9, (int) map(value, 0, 1.0f, 0, 127.0f));
                 }
-            } else if(name.startsWith("redval") || name.startsWith("greenval") || name.startsWith("blueval")) {
-                trinkhalle.testRGB(color(redval*255, greenval*255, blueval*255));
+            } else if (name.startsWith("redval") || name.startsWith("greenval") || name.startsWith("blueval")) {
+                trinkhalle.testRGB(color(redval * 255, greenval * 255, blueval * 255));
 
             }
         }
@@ -445,7 +450,7 @@ public class MainWindow extends PApplet {
                         break;
                     case TRIALPRI:
                         midi.sendNoteOn(9, 45, 10);
-                        sldrEffectDuration.setValue(20);
+                        sldrEffectDuration.setValue(35);
                         midi.sendControllerChange(0, 13, 19);
                         break;
                     case DANCE2:
@@ -472,8 +477,8 @@ public class MainWindow extends PApplet {
 
     private void setEffectRadio(Effect effect) {
         int i = 0;
-        for(Toggle item: effectRadio.getItems()) {
-            if(effect.toString().equals(item.getAddress().substring(1))) {
+        for (Toggle item : effectRadio.getItems()) {
+            if (effect.toString().equals(item.getAddress().substring(1))) {
                 effectRadio.activate(i);
                 return;
             }
