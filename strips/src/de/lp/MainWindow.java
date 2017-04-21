@@ -66,7 +66,7 @@ public class MainWindow extends PApplet {
 
         int y = 10;
         sldrOverallBrightness = cp5.addSlider("overallbrightness").setPosition(10, y).setSize(100, 10).setRange(0, 1.0f).setValue(0.5f);
-        cp5.addSlider("preAmp").setPosition(10, y += 15).setSize(100, 10).setRange(0, 40.0f).setValue(10.0f);
+        cp5.addSlider("preAmp").setPosition(10, y += 15).setSize(100, 10).setRange(1, 40.0f).setValue(1.0f);
         y += 10;
         sldrAttackAudio = cp5.addSlider("attackAudio").setPosition(10, y += 15).setSize(100, 10).setRange(0.0f, 1.0f).setValue(1.0f);
         sldrReleaseAudio = cp5.addSlider("releaseAudio").setPosition(10, y += 15).setSize(100, 10).setRange(0.0f, 1.0f).setValue(1.0f);
@@ -359,6 +359,9 @@ public class MainWindow extends PApplet {
 //                }
 //            }
 
+
+
+
         } else if ((msg.checkAddrPattern(ORGAN1) || msg.checkAddrPattern(ORGAN2))) {
             if (midiEnable) {
                 oscOrgel(msg);
@@ -446,11 +449,12 @@ public class MainWindow extends PApplet {
                         midi.sendNoteOn(9, 44, 10);
                         sldrEffectDuration.setValue(-1);
                         midi.sendControllerChange(0, 13, 0);
-                        sldrAmpMod.setValue(0.7f);
+                        sldrAmpMod.setValue(1.0f);
+                        trinkhalle.knee3(1);
                         break;
                     case TRIALPRI:
                         midi.sendNoteOn(9, 45, 10);
-                        sldrEffectDuration.setValue(35);
+                        sldrEffectDuration.setValue(38);
                         midi.sendControllerChange(0, 13, 19);
                         break;
                     case DANCE2:
