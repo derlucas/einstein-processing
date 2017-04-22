@@ -47,7 +47,7 @@ public class MainWindow extends PApplet {
     private Trinkhalle trinkhalle;
 
     public void settings() {
-        size(800, 430);
+        size(800, 450);
     }
 
     public void setup() {
@@ -62,6 +62,7 @@ public class MainWindow extends PApplet {
         for (int i = 0; i < COUNT; i++) {
             cp5.addToggle("outputStrip" + i).setPosition(300 + i * 40, 70).setSize(30, 15).setId(i).setValue(false).setLabel("STRP " + (i + 1));
             cp5.addToggle("outputPanzer" + i).setPosition(300 + i * 40, 110).setSize(30, 15).setId(i).setValue(false).setLabel("PANZ " + (i + 1));
+            cp5.addToggle("testCostume" + i).setPosition(300 + i * 40, 235).setSize(30, 15).setId(i).setValue(false).setLabel("TEST " + (i + 1));
         }
 
         int y = 10;
@@ -111,6 +112,10 @@ public class MainWindow extends PApplet {
         textSize(11);
     }
 
+    public void setBlack() {
+        trinkhalle.setBlack();
+    }
+
     public void setBlackout(boolean bo) {      // function for the ControlP5 Toggle
         if (this.blackout != bo && bo) {
             trinkhalle.setBlack();
@@ -158,7 +163,7 @@ public class MainWindow extends PApplet {
         trinkhalle.render();
 
         // draw costumes
-        trinkhalle.draw(10, 250);
+        trinkhalle.draw(10, 270);
 
         // send data via UDP
         if (System.currentTimeMillis() - millisDataSend > SENDDELAY) {
@@ -360,8 +365,6 @@ public class MainWindow extends PApplet {
 //            }
 
 
-
-
         } else if ((msg.checkAddrPattern(ORGAN1) || msg.checkAddrPattern(ORGAN2))) {
             if (midiEnable) {
                 oscOrgel(msg);
@@ -390,6 +393,8 @@ public class MainWindow extends PApplet {
                 trinkhalle.setOutputEnableStrip(theEvent.getId(), value > 0);
             } else if (name.startsWith("outputPanzer")) {
                 trinkhalle.setOutputEnablePanzer(theEvent.getId(), value > 0);
+            } else if (name.startsWith("testCostume")) {
+                trinkhalle.setTestCostume(theEvent.getId(), value > 0);
             } else if (name.startsWith("overallbrightness")) {
                 trinkhalle.setBrightness(value);
                 if (midi != null) {
@@ -435,7 +440,7 @@ public class MainWindow extends PApplet {
                 for (int i = 36; i < 52; i++) {
                     midi.sendNoteOff(9, i, 0);
                 }
-                switch (trinkhalle.getSelectedEffect()) {
+                switch (trinkhalle.getSelectedEffect()) {    // dinge tun beim start der Effekte
                     case TRIAL1: midi.sendNoteOn(9, 48, 10); break;
                     case TRIAL2: midi.sendNoteOn(9, 49, 10); break;
                     case TRIAL3: midi.sendNoteOn(9, 50, 10); break;
@@ -467,8 +472,11 @@ public class MainWindow extends PApplet {
                         break;
                     case KNEE4:
                         midi.sendNoteOn(9, 47, 10);
-                        trinkhalle.knee4();
+                        trinkhalle.knee4(0);
                         break;
+                    case KNEE4END:
+                        midi.sendNoteOn(9, 41, 10);
+                        trinkhalle.knee4(1);
                     case BUILDING:
                         midi.sendNoteOn(9, 40, 10);
                         trinkhalle.building();
@@ -504,7 +512,7 @@ public class MainWindow extends PApplet {
             case 38: ; break;
             case 39: ; break;
             case 40: setEffectRadio(Effect.BUILDING); break;
-            case 41: ; break;
+            case 41: setEffectRadio(Effect.KNEE4END); break;
             case 42: ; break;
             case 43: ; break;
             case 44: setEffectRadio(Effect.KNEE3ON); break;

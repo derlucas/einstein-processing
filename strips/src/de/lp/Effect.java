@@ -11,6 +11,7 @@ public enum Effect {
     KNEE3ON(8),
     DANCE2(9),
     KNEE4(10),
+    KNEE4END(13),
     BUILDING(11),
     RGB(12);
 

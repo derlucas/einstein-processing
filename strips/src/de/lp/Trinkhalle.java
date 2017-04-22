@@ -42,11 +42,16 @@ public class Trinkhalle {
     private int effectFadeDuration = 10;
     private int stripsTestBang = 0;
     private Symbols effectSymbol = Symbols.OFF;
+    private final int colorBlue;
+    private final int colorRed;
+    private boolean testCostumeMode[] = new boolean[12];
 
     Trinkhalle(MainWindow mainWindow) {
         this.base = mainWindow;
         this.udp = new UDP(this, 2102);
 
+        colorBlue = base.color(0,76,255);
+        colorRed = base.color(255,2,0);
 
         Strip anna = new StripAnna(mainWindow, udp, ADDRESSES_STRIPS[0]);                // Anna Miklashevich
         Strip katharina = new StripKatharina(mainWindow, udp, ADDRESSES_STRIPS[1]);      // Katharina Eberl
@@ -102,6 +107,10 @@ public class Trinkhalle {
 
     void setSelectedEffect(Effect selectedEffect) {
         this.selectedEffect = selectedEffect;
+    }
+
+    int getColorBlue() {
+        return colorBlue;
     }
 
     boolean isEffect(Effect... effect) {
@@ -199,8 +208,6 @@ public class Trinkhalle {
     void dance2(int num) {
 
         // was soll beim start von Dance kommen?
-
-        //panzers.forEach(Panzer::black);
         final int sopran;
         final int tenor;
         final int alt;
@@ -216,7 +223,7 @@ public class Trinkhalle {
             sopran = tenor = base.color(0, 255, 0);
             alt = bass = base.color(0, 0, 255);
         } else if (num == 4) {              // F von Orgel
-            sopran = tenor = alt = bass = base.color(255,0,0);
+            sopran = tenor = alt = bass = base.color(255, 0, 0);
         } else {
             sopran = tenor = alt = bass = 0;
         }
@@ -225,20 +232,22 @@ public class Trinkhalle {
         panzersTenor.forEach(panzer -> panzer.effectSingleColor(tenor));
         panzersAlt.forEach(panzer -> panzer.effectSingleColor(alt));
         panzersBass.forEach(panzer -> panzer.effectSingleColor(bass));
-
     }
 
     void dance2start() {
-        int color = base.color(255, 0, 0);
-        panzers.forEach(panzer -> panzer.effectSingleColor(color));
+        panzers.forEach(panzer -> panzer.effectSingleColor(colorRed));
     }
 
-    void knee4() {
-        int color = base.color(255, 0, 0);
-        panzersSopran.forEach(panzer -> panzer.effectSingleColor(0));
-        panzersAlt.forEach(panzer -> panzer.effectSingleColor(0));
-        panzersTenor.forEach(panzer -> panzer.effectSingleColor(color));
-        panzersBass.forEach(panzer -> panzer.effectSingleColor(color));
+    void knee4(int mode) {
+        if (mode == 1) {
+            panzersSopran.forEach(panzer -> panzer.effectSingleColor(colorBlue));
+            panzersAlt.forEach(panzer -> panzer.effectSingleColor(colorBlue));
+        } else {
+            panzersSopran.forEach(panzer -> panzer.effectSingleColor(0));
+            panzersAlt.forEach(panzer -> panzer.effectSingleColor(0));
+        }
+        panzersTenor.forEach(panzer -> panzer.effectSingleColor(colorRed));
+        panzersBass.forEach(panzer -> panzer.effectSingleColor(colorRed));
     }
 
     void building() {
@@ -252,11 +261,11 @@ public class Trinkhalle {
         int color;
         switch (farbe) {
             case 0: color = base.color(255); break;
-            case 1: color = base.color(0,255,0); break;
-            case 2: color = base.color(255,0,0); break;
-            case 3: color = base.color(0,0,255); break;
-            case 4: color = base.color(255,255,0); break;
-            case 5: color = base.color(255,0,255); break;
+            case 1: color = base.color(0, 255, 0); break;
+            case 2: color = base.color(255, 0, 0); break;
+            case 3: color = base.color(0, 0, 255); break;
+            case 4: color = base.color(255, 255, 0); break;
+            case 5: color = base.color(255, 0, 255); break;
             default: color = 0;
         }
         panzers.forEach(panzer -> panzer.effectSingleColor(color));
@@ -277,7 +286,7 @@ public class Trinkhalle {
     }
 
     void testRGB(int color) {
-        if(isEffect(Effect.RGB)) {
+        if (isEffect(Effect.RGB)) {
             for (Strip strip : strips) {
                 strip.effectSingleColor(color);
             }
@@ -285,6 +294,14 @@ public class Trinkhalle {
                 panzer.effectSingleColor(color);
             }
         }
+    }
+
+    void setTestCostume(int costume, boolean on) {
+        if(!on && testCostumeMode[costume]) {
+            strips.get(costume).effectSingleColor(0);
+            panzers.get(costume).effectSingleColor(0);
+        }
+        testCostumeMode[costume] = on;
     }
 
     void render() {
@@ -323,6 +340,14 @@ public class Trinkhalle {
             int color = base.color(0);
             if (isEffect(Effect.TRIALPRI, Effect.KNEE3)) {
                 strips.forEach(costume -> costume.effectSymbol(effectSymbol, color));
+            }
+        }
+
+        int white = base.color(100);
+        for (int i = 0; i < 12; i++) {
+            if(testCostumeMode[i]) {
+                strips.get(i).effectSingleColor(white);
+                panzers.get(i).effectSingleColor(white);
             }
         }
     }
