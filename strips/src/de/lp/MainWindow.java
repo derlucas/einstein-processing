@@ -46,6 +46,8 @@ public class MainWindow extends PApplet {
     private RadioButton effectRadio;
     private Trinkhalle trinkhalle;
 
+    private long rgbTestMillis;
+
     public void settings() {
         size(800, 450);
     }
@@ -128,6 +130,8 @@ public class MainWindow extends PApplet {
         trinkhalle.flash110();
     }
 
+    float hue = 0;
+
     public void draw() {
         background(0);
 
@@ -159,6 +163,14 @@ public class MainWindow extends PApplet {
         rect(220, 10, 20, 20);
         fill(Color.HSBtoRGB(map(bjnote, 0, 127, 0.0f, 1.0f), 0.75f, 0.7f));
         rect(245, 10, 20, 20);
+
+        if(millis() - rgbTestMillis > 100) {
+
+            int col = Color.HSBtoRGB(hue, 1, 1);
+            trinkhalle.testRGB(col);
+            hue += 0.01;
+            if(hue > 1.0f) hue = 0.0f;
+        }
 
         trinkhalle.render();
 
